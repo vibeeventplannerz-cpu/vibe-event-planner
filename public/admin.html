@@ -420,14 +420,20 @@
       }
     }
 
-    // Helper to POST to Apps Script REST endpoint
+    // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
       const body = Object.assign({}, payload, { id_token: idToken });
-      return fetch(SCRIPT_URL, {
+      const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
+      const params = new URLSearchParams();
+      for (const k in body) {
+        if (body[k] === undefined || body[k] === null) continue;
+        params.append(k, typeof body[k] === 'object' ? JSON.stringify(body[k]) : body[k]);
+      }
+      return fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
       }).then(r => r.json());
     }
 
@@ -626,31 +632,24 @@
         return;
       }
 
-      // Fallback for static hosting: POST to SCRIPT_URL with id_token
+      // Fallback for static hosting: use postToScript helper (form-encoded)
       const payload = { action: eventId ? 'updateEvent' : 'addEvent', eventData: eventData };
       if (eventId) payload.eventId = eventId;
-      const idToken = localStorage.getItem('googleToken') || '';
-
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(Object.assign({}, payload, { id_token: idToken }))
-      })
-      .then(r => r.json())
-      .then(result => {
-        if (result.success) {
-          showAlert(result.message || 'Saved', 'success');
-          closeModal();
-          loadEvents();
-        } else {
-          showAlert(result.message || result.error || 'Save failed', 'error');
-        }
-      })
-      .catch(err => showAlert('Error: ' + err, 'error'))
-      .finally(() => {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save Event';
-      });
+      postToScript(payload)
+        .then(result => {
+          if (result && result.success) {
+            showAlert(result.message || 'Saved', 'success');
+            closeModal();
+            loadEvents();
+          } else {
+            showAlert(result && (result.message || result.error) ? (result.message || result.error) : 'Save failed', 'error');
+          }
+        })
+        .catch(err => showAlert('Error: ' + err, 'error'))
+        .finally(() => {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Event';
+        });
 
     }
 

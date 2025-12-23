@@ -171,19 +171,7 @@
       text-align: center;
     }
 
-    .debug-info {
-      background: #f0f0f0;
-      padding: 15px;
-      border-radius: 10px;
-      margin: 20px 0;
-      font-family: monospace;
-      font-size: 12px;
-      display: none;
-    }
-    
-    .show-debug {
-      display: block !important;
-    }
+    /* debug-info removed */
     
     .search-filter {
       display: flex;
@@ -722,19 +710,13 @@
         <button class="btn btn-primary" id="adminBtn" style="display: none;" onclick="goToAdmin()">
           <i class="fas fa-tools"></i> Admin Panel
         </button>
-        <button class="btn btn-primary" onclick="toggleDebug()">
-          🐛 Debug
-        </button>
+        <!-- Debug button removed in production -->
       </div>
     </div>
     
     <div id="alertBox" class="alert"></div>
 
-    <!-- Debug Info -->
-    <div id="debugInfo" class="debug-info">
-      <strong>Debug Information:</strong><br>
-      <div id="debugContent"></div>
-    </div>
+    <!-- Debug info removed -->
     
     <div class="card">
       <div class="month-navigation">
@@ -903,13 +885,20 @@
     }
 
     // Helper to POST to Apps Script REST endpoint when not running inside HtmlService
+    // Use form-encoded body to avoid CORS preflight issues (no OPTIONS)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
       const body = Object.assign({}, payload, { id_token: idToken });
-      return fetch(SCRIPT_URL, {
+      const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
+      const params = new URLSearchParams();
+      for (const k in body) {
+        if (body[k] === undefined || body[k] === null) continue;
+        params.append(k, typeof body[k] === 'object' ? JSON.stringify(body[k]) : body[k]);
+      }
+      return fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
       }).then(r => r.json());
     }
 
@@ -960,21 +949,18 @@
           .getEvents();
       } 
       // Method 2: Try Fetch API (for Netlify deployment)
-      else if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
-        log('Using Fetch API with URL:', SCRIPT_URL);
-        
+      else if ((typeof webAppUrl === 'string' && webAppUrl) || (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE')) {
+        const apiUrl = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : SCRIPT_URL;
+        log('Using Fetch API with URL:', apiUrl);
         const userEmail = localStorage.getItem('userEmail');
-        fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
-          .then(response => {
-            log('Fetch response received', response.status);
-            return response.json();
-          })
+        fetch(`${apiUrl}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
+          .then(response => response.json())
           .then(data => {
             log('Events data received', data);
-            if (data.success && data.events) {
+            if (data && data.success && data.events) {
               handleEventsSuccess(data.events);
             } else {
-              throw new Error(data.error || 'Failed to load events');
+              throw new Error(data && (data.error || data.message) ? (data.error || data.message) : 'Failed to load events');
             }
           })
           .catch(error => {

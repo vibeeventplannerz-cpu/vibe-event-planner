@@ -676,6 +676,7 @@
         <p>Behind the beauty of every event, your hard work and dedication are on another level🔥. Thanks for being the backbone of Vibe Event Planner'Z!💖</p>
       </div>
       <button id="adminBtn" class="btn-admin" onclick="openAdmin()">🔧 Admin Panel</button>
+      <button id="eventsBtn" class="btn-admin" style="display:none; margin-left:10px;" onclick="goToEvents()">📸 Events</button>
     </div>
 
     <!-- ADD THIS ALERT BOX -->
@@ -737,6 +738,8 @@
 
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
+    // prefer webAppUrl when available (set by Google-hosted pages)
+    let webAppUrl = SCRIPT_URL;
     // Authentication Check - இது calendar page-க்கு important
     window.addEventListener('load', function() {
       const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -760,20 +763,27 @@
       
       if (isAdmin) {
         document.getElementById('adminBtn').style.display = 'block';
+        document.getElementById('eventsBtn').style.display = 'inline-block';
       }
       
       // Load events with user context
       loadEventsWithAuth(email);
     }
 
-    // Helper to POST to Apps Script REST endpoint
+    // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
       const body = Object.assign({}, payload, { id_token: idToken });
-      return fetch(SCRIPT_URL, {
+      const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
+      const params = new URLSearchParams();
+      for (const k in body) {
+        if (body[k] === undefined || body[k] === null) continue;
+        params.append(k, typeof body[k] === 'object' ? JSON.stringify(body[k]) : body[k]);
+      }
+      return fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
       }).then(r => r.json());
     }
     
@@ -811,8 +821,13 @@
           .then(r => r.json())
           .then(data => {
             isOwner = !!(data && data.isAdmin);
-            if (isOwner) document.getElementById('adminBtn').style.display = 'block';
-            else document.getElementById('adminBtn').style.display = 'none';
+            if (isOwner) {
+              document.getElementById('adminBtn').style.display = 'block';
+              document.getElementById('eventsBtn').style.display = 'inline-block';
+            } else {
+              document.getElementById('adminBtn').style.display = 'none';
+              document.getElementById('eventsBtn').style.display = 'none';
+            }
           })
           .catch(err => {
             console.error('Owner check fetch failed:', err);
@@ -828,6 +843,10 @@
           window.location.href = '/admin.html';
         })
         .getWebAppUrl();
+    }
+
+    function goToEvents() {
+      window.location.href = '/events.html';
     }
 
     function loadEventsWithAuth(email) {
