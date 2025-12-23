@@ -740,34 +740,88 @@
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
     // prefer webAppUrl when available (set by Google-hosted pages)
     let webAppUrl = SCRIPT_URL;
+    // Explicit admin override list (only these emails see admin UI, upload/delete, and Events button)
+    // Add more emails as needed. Example: ['samplemail333555@gmail.com']
+    const ADMIN_OVERRIDE_EMAILS = [
+      'samplemail333555@gmail.com','hn6160324@gmail.com'
+    ];
     // Authentication Check - இது calendar page-க்கு important
     window.addEventListener('load', function() {
       const isAuthenticated = localStorage.getItem('isAuthenticated');
       const userEmail = localStorage.getItem('userEmail');
-      
+
       if (!isAuthenticated || !userEmail) {
         // Not authenticated - redirect to login
         window.location.href = '/index.html';
         return;
       }
-      
+
       // User authenticated - continue loading
       console.log('User authenticated:', userEmail);
-      
-      // Send email to your existing functions
-      checkOwnerWithEmail(userEmail);
+
+      // Determine roles (owner override vs sheet-admin) and then load events
+      determineRolesAndInit(userEmail);
     });
     
-    function checkOwnerWithEmail(email) {
-      const isAdmin = localStorage.getItem('isAdmin') === 'true';
-      
-      if (isAdmin) {
-        document.getElementById('adminBtn').style.display = 'block';
-        document.getElementById('eventsBtn').style.display = 'inline-block';
+    // Determine roles using ADMIN_OVERRIDE_EMAILS (owner) and server-side Admins sheet
+    function determineRolesAndInit(email) {
+      const emailLower = (email || '').toLowerCase();
+      const adminBtn = document.getElementById('adminBtn');
+      const evBtn = document.getElementById('eventsBtn');
+
+      // Owner override check (owner gets Admin Panel + Events + upload/delete)
+      const isOwnerOverride = ADMIN_OVERRIDE_EMAILS.indexOf(emailLower) !== -1;
+      if (isOwnerOverride) {
+        isOwner = true;
+        // Ensure admin.html can rely on this flag if it checks localStorage
+        localStorage.setItem('isAdmin', 'true');
+        if (adminBtn) adminBtn.style.display = 'block';
+        if (evBtn) evBtn.style.display = 'inline-block';
+        // Load events after role set
+        loadEventsWithAuth(email);
+        return;
       }
-      
-      // Load events with user context
-      loadEventsWithAuth(email);
+
+      // Not an owner override — ask server whether this email is listed in Admins sheet
+      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec' && email) {
+        fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(email)}`)
+          .then(r => r.json())
+          .then(data => {
+            const isSheetAdmin = !!(data && data.isAdmin);
+            // Sheet admins see only the Events button (not Admin Panel)
+            isOwner = false;
+            localStorage.setItem('isAdmin', isSheetAdmin ? 'false' : 'false');
+            if (isSheetAdmin) {
+              if (adminBtn) adminBtn.style.display = 'none';
+              if (evBtn) evBtn.style.display = 'inline-block';
+            } else {
+              if (adminBtn) adminBtn.style.display = 'none';
+              if (evBtn) evBtn.style.display = 'none';
+            }
+            // Load events after role resolved
+            loadEventsWithAuth(email);
+          })
+          .catch(err => {
+            console.error('Owner check fetch failed:', err);
+            // On error, hide admin controls
+            isOwner = false;
+            if (adminBtn) adminBtn.style.display = 'none';
+            if (evBtn) evBtn.style.display = 'none';
+            loadEventsWithAuth(email);
+          });
+      } else {
+        // No server configured — fallback to local stored flag (conservative)
+        const isAdminStored = localStorage.getItem('isAdmin') === 'true';
+        isOwner = !!isAdminStored;
+        if (isOwner) {
+          if (adminBtn) adminBtn.style.display = 'block';
+          if (evBtn) evBtn.style.display = 'inline-block';
+        } else {
+          if (adminBtn) adminBtn.style.display = 'none';
+          if (evBtn) evBtn.style.display = 'none';
+        }
+        loadEventsWithAuth(email);
+      }
     }
 
     // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
@@ -816,7 +870,7 @@
 
       // Fallback via SCRIPT_URL
       const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE' && userEmail) {
+      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec' && userEmail) {
         fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(userEmail)}`)
           .then(r => r.json())
           .then(data => {
@@ -838,11 +892,8 @@
     }
 
     function openAdmin() {
-      google.script.run
-        .withSuccessHandler(function(url) {
-          window.location.href = '/admin.html';
-        })
-        .getWebAppUrl();
+      // Direct redirect to admin page; admin.html validates localStorage.isAdmin
+      window.location.href = '/admin.html';
     }
 
     function goToEvents() {
@@ -867,7 +918,7 @@
       }
 
       // Fallback to fetch-based API
-      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
         fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(email)}`)
           .then(r => r.json())
           .then(data => {
