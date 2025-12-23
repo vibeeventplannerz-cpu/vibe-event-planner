@@ -411,7 +411,7 @@
             loadEvents();
           })
           .getWebAppUrl();
-      } else if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+      } else if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
         webAppUrl = SCRIPT_URL;
         loadEvents();
       } else {
@@ -455,7 +455,7 @@
 
       // Fallback to fetch API
       const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
         fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
           .then(r => r.json())
           .then(data => {

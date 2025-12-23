@@ -854,7 +854,7 @@
             loadEvents();
           })
           .getWebAppUrl();
-      } else if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+      } else if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
         // Netlify/static deployment: use configured SCRIPT_URL for API calls
         webAppUrl = SCRIPT_URL;
         checkOwner();
@@ -918,7 +918,7 @@
 
       // Fallback: call REST-style API at SCRIPT_URL?action=checkAdmin&email=...
       const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE' && userEmail) {
+      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec' && userEmail) {
         fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(userEmail)}`)
           .then(res => res.json())
           .then(data => {
@@ -949,7 +949,7 @@
           .getEvents();
       } 
       // Method 2: Try Fetch API (for Netlify deployment)
-      else if ((typeof webAppUrl === 'string' && webAppUrl) || (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE')) {
+      else if ((typeof webAppUrl === 'string' && webAppUrl) || (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec')) {
         const apiUrl = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : SCRIPT_URL;
         log('Using Fetch API with URL:', apiUrl);
         const userEmail = localStorage.getItem('userEmail');
