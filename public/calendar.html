@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Event Calendar - Manage your events">
+  <meta name="theme-color" content="#667eea">
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
+  
+  <title>Event Calendar</title>
+
+  <!-- Font Awesome CDN (head la add pannunga) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      font-family: serif;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header h4 {
+      font-family: serif;
+    }
+    .header p {
+      font-family: serif;
+    }
+
+    .btn-admin {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: none;
+    }
+
+    .btn-admin:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .calendar-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .calendar-header {
+      background: linear-gradient(135deg, #3350d4 0%, #6824ad 100%);
+      color: white;
+      padding: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calendar-header h2 {
+      font-size: 1.8em;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid white;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+
+    /* .nav-btn:hover {
+      background: white;
+      color: #667eea;
+      transform: translateY(-2px);
+    } */
+
+    .calendar-body {
+      padding: 30px;
+      min-height: 300px;
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-weight: bold;
+      color: #667eea;
+      padding: 10px;
+      font-size: 0.9em;
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      background: #f8f9fa;
+      border: 2px solid transparent;
+    }
+
+    .day:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .day.other-month {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .day.today {
+      background: #fff3cd;
+      border-color: #ffc107;
+      font-weight: bold;
+    }
+
+    .day.has-event {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: bold;
+    }
+
+    .day.has-event:hover {
+      transform: scale(1.1);
+    }
+
+    .day.selected {
+      background: #28a745;
+      color: white;
+      font-weight: bold;
+      border: 3px solid #155724;
+      box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+    }
+
+    .day-number {
+      font-size: 1.2em;
+    }
+
+    .event-indicator {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      margin-top: 4px;
+    }
+
+    .event-list {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #e0e0e0;
+    }
+
+    .event-list h3 {
+      color: #667eea;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+
+    .btn-all-events {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .event-line {
+      background: #f8f9fa;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      overflow: hidden;
+      border-left: 4px solid #667eea;
+      transition: all 0.3s;
+    }
+
+    .event-line:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transform: translateX(5px);
+    }
+
+    .event-header {
+      padding: 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+    }
+
+    .event-header:hover {
+      background: #e9ecef;
+    }
+
+    .event-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .event-meta {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      color: #666;
+      font-size: 0.85em;
+    }
+
+    .expand-icon {
+      font-size: 1.5em;
+      color: #667eea;
+      transition: transform 0.3s;
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(180deg);
+    }
+
+    .event-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+      background: white;
+    }
+
+    .event-details.expanded {
+      max-height: 3000px;
+      border-top: 2px solid #e0e0e0;
+    }
+
+    .event-details-content {
+      padding: 25px;
+    }
+
+    .detail-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .detail-section:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 1em;
+    }
+
+    .detail-content {
+      color: #333;
+      line-height: 1.8;
+      font-size: 0.95em;
+    }
+
+    .attendee-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .attendee-tag {
+      background: #667eea;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+    }
+
+    .event-image {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    .upload-section {
+      background: #f0f4ff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+
+    .upload-section h4 {
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-label {
+      background: #667eea;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.3s;
+    }
+
+    .file-label:hover {
+      background: #5568d3;
+    }
+
+    .upload-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: all 0.3s;
+    }
+
+    .upload-btn:hover {
+      background: #218838;
+    }
+
+    .file-name {
+      display: inline-block;
+      margin-left: 10px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .file-list {
+      margin-top: 15px;
+    }
+
+    .file-item {
+      background: #f8f9fa;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .file-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .file-link:hover {
+      text-decoration: underline;
+    }
+
+    .delete-file-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85em;
+      transition: all 0.3s;
+    }
+
+    .delete-file-btn:hover {
+      background: #c82333;
+    }
+
+    .alert {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #667eea;
+      font-size: 1.2em;
+    }
+
+    .no-events {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-style: italic;
+    }
+
+    #backToTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 145px;
+      height: 45px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      background: #2E1A47;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+      font-size: 18px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      z-index: 999;
+    }
+
+    #backToTopBtn:hover {
+      background: #5539CC;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.3);
+    }
+
+    #backToTopBtn i {
+      pointer-events: none; /* click button ku poganum */
+    }
+
+
+    /* Image Modal */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 2000;
+      padding: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .image-modal-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .image-modal-content img {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(255,255,255,0.3);
+    }
+
+    .image-modal-close {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 2001;
+      background: rgba(0,0,0,0.5);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .image-modal-close:hover {
+      background: rgba(255,255,255,0.2);
+      transform: rotate(90deg);
+    }
+
+
+
+
+    
+    @media (max-width: 768px) {
+      body{
+        padding:40px 10px 10px 10px;
+      }
+      .header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 1.8em;
+      }
+
+      .calendar-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .calendar-body {
+        padding: 15px;
+      }
+
+      .weekday {
+        font-size: 0.8em;
+        padding: 5px;
+      }
+
+      .day.selected {
+        border: 1px solid #155724;
+      }
+
+      .event-meta {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .event-list h3 {
+        font-size: 1.3em;
+      }
+
+      .btn-all-events {
+        width: 100%;
+      }
+
+      #backToTopBtn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+      }
+
+      #backToTopBtn a {
+        display: none;
+      }
+
+      /* click time la color + size change */
+      .my-btn.clicked {
+        background-color: #fff;
+        color: #667eea;
+      }
+    }
+
+    @media (min-width: 768px){
+      .nav-btn:hover {
+      background: white;
+      color: #667eea;
+      transform: translateY(-2px);
+    }
+    .btn-admin {
+        display: none;
+    }
+    }
+
+
+    @media (hover: none) {
+      .btn-admin:hover {
+        transform: none;
+    }
+
+    .nav-btn:hover {
+      transform: none;
+    }
+
+    .day:hover {
+      transform: none;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .day.has-event:hover {
+      transform: none;
+    }
+
+    .event-line:hover {
+      transform: none;
+    }
+
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <!-- <h1>📅 Event Management System</h1> -->
+      <h1>Vibe Event Planner'Z</h1>
+      <div>
+        <!-- <p>Track and manage your events effortlessly</p>  -->
+        <h4>Dear Team Members 👬🏻</h4>
+        <p>Behind the beauty of every event, your hard work and dedication are on another level🔥. Thanks for being the backbone of Vibe Event Planner'Z!💖</p>
+      </div>
+      <button id="adminBtn" class="btn-admin" onclick="openAdmin()">🔧 Admin Panel</button>
+    </div>
+
+    <!-- ADD THIS ALERT BOX -->
+    <div id="alertBox" class="alert" style="display: none;"></div>
+
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <h2 id="monthYear"></h2>
+        <div class="nav-buttons">
+          <button class="nav-btn my-btn" onclick="previousMonth()"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+          <button class="nav-btn my-btn" onclick="nextMonth()">Next <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <div class="calendar-body">
+        <div class="loading" id="loading">Loading events...</div>
+        
+        <div id="calendarGrid" style="display: none;">
+          <div class="weekdays">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
+          </div>
+          <div class="days" id="daysContainer"></div>
+        </div>
+
+        <div class="event-list" id="eventList" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+            <h3 id="eventListTitle" style="margin: 0;">Events This Month</h3>
+            <button id="showAllBtn" class="btn-all-events" style="display: none; background: #667eea; color: white; border: none;" onclick="showAllEvents()">
+              📋 All Events
+            </button>
+          </div>
+          <div id="eventItems"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+    <span class="image-modal-close" onclick="closeImageModal()"><i class="fa-solid fa-window-close"></i></span>
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+      <img id="modalImage" src="" alt="Event Image">
+    </div>
+  </div>
+
+  <!-- Back to top button -->
+  <button id="backToTopBtn" aria-label="Back to top"><a>Top</a>
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
+  <!-- PWA Scripts -->
+  <script src="/sw-register.js"></script>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
+    // Authentication Check - இது calendar page-க்கு important
+    window.addEventListener('load', function() {
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
+      const userEmail = localStorage.getItem('userEmail');
+      
+      if (!isAuthenticated || !userEmail) {
+        // Not authenticated - redirect to login
+        window.location.href = '/index.html';
+        return;
+      }
+      
+      // User authenticated - continue loading
+      console.log('User authenticated:', userEmail);
+      
+      // Send email to your existing functions
+      checkOwnerWithEmail(userEmail);
+    });
+    
+    function checkOwnerWithEmail(email) {
+      const isAdmin = localStorage.getItem('isAdmin') === 'true';
+      
+      if (isAdmin) {
+        document.getElementById('adminBtn').style.display = 'block';
+      }
+      
+      // Load events with user context
+      loadEventsWithAuth(email);
+    }
+
+    // Helper to POST to Apps Script REST endpoint
+    function postToScript(payload) {
+      const idToken = localStorage.getItem('googleToken') || '';
+      const body = Object.assign({}, payload, { id_token: idToken });
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(r => r.json());
+    }
+    
+    let currentDate = new Date();
+    let allEvents = [];
+    let selectedDate = null;
+    let expandedEventId = null;
+    let isOwner = false;
+
+    function checkOwner() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(owner) {
+            isOwner = owner;
+            console.log('Owner check result:', owner); // Debug
+            if (owner) {
+              document.getElementById('adminBtn').style.display = 'block';
+            } else {
+              document.getElementById('adminBtn').style.display = 'none';
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error('Owner check failed:', error);
+            isOwner = false;
+            document.getElementById('adminBtn').style.display = 'none';
+          })
+          .isOwner();
+        return;
+      }
+
+      // Fallback via SCRIPT_URL
+      const userEmail = localStorage.getItem('userEmail') || '';
+      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE' && userEmail) {
+        fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(userEmail)}`)
+          .then(r => r.json())
+          .then(data => {
+            isOwner = !!(data && data.isAdmin);
+            if (isOwner) document.getElementById('adminBtn').style.display = 'block';
+            else document.getElementById('adminBtn').style.display = 'none';
+          })
+          .catch(err => {
+            console.error('Owner check fetch failed:', err);
+            isOwner = false;
+            document.getElementById('adminBtn').style.display = 'none';
+          });
+      }
+    }
+
+    function openAdmin() {
+      google.script.run
+        .withSuccessHandler(function(url) {
+          window.location.href = '/admin.html';
+        })
+        .getWebAppUrl();
+    }
+
+    function loadEventsWithAuth(email) {
+      // உங்க existing loadEvents() function-ஐ modify பண்ணுங்க
+      // இப்போ email-ஐ backend-க்கு send பண்ணுங்க
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(events) {
+            allEvents = events || [];
+            document.getElementById('loading').style.display = 'none';
+            renderCalendar();
+          })
+          .withFailureHandler(function(error) {
+            console.error('Error loading events:', error);
+          })
+          .getEvents();
+        return;
+      }
+
+      // Fallback to fetch-based API
+      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+        fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(email)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data && data.success && data.events) {
+              allEvents = data.events;
+              document.getElementById('loading').style.display = 'none';
+              renderCalendar();
+            } else {
+              console.error('Failed to load events via fetch', data);
+            }
+          })
+          .catch(err => console.error('Fetch error loading events:', err));
+      } else {
+        // No backend configured — use demo data
+        allEvents = [];
+        document.getElementById('loading').style.display = 'none';
+        renderCalendar();
+      }
+    }
+
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                         'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      const monthEvents = allEvents.filter(event => {
+        if (!event.date) return false;
+        try {
+          const eventDate = new Date(event.date + 'T00:00:00');
+          return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      const eventDates = {};
+      monthEvents.forEach(event => {
+        try {
+          const day = new Date(event.date + 'T00:00:00').getDate();
+          if (!eventDates[day]) eventDates[day] = [];
+          eventDates[day].push(event);
+        } catch (e) {
+          console.error('Error processing event:', e);
+        }
+      });
+
+      const daysContainer = document.getElementById('daysContainer');
+      daysContainer.innerHTML = '';
+
+      // Previous month days
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day other-month';
+        dayDiv.innerHTML = `<span class="day-number">${day}</span>`;
+        daysContainer.appendChild(dayDiv);
+      }
+
+      // Current month days
+      const today = new Date();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day';
+        
+        const isToday = day === today.getDate() && 
+                       month === today.getMonth() && 
+                       year === today.getFullYear();
+        
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isSelected = selectedDate === dateStr;
+        
+        if (isToday) dayDiv.classList.add('today');
+        if (isSelected) dayDiv.classList.add('selected');
+        
+        if (eventDates[day]) {
+          dayDiv.classList.add('has-event');
+          dayDiv.innerHTML = `
+            <span class="day-number">${day}</span>
+            <span class="event-indicator"></span>
+          `;
+          dayDiv.onclick = () => selectDate(year, month, day);
+        } else {
+          dayDiv.innerHTML = `<span class="day-number">${day}</span>`;
+        }
+        
+        daysContainer.appendChild(dayDiv);
+      }
+
+      // Next month days
+      const totalCells = daysContainer.children.length;
+      const remainingCells = 42 - totalCells;
+      for (let day = 1; day <= remainingCells; day++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day other-month';
+        dayDiv.innerHTML = `<span class="day-number">${day}</span>`;
+        daysContainer.appendChild(dayDiv);
+      }
+
+      document.getElementById('calendarGrid').style.display = 'block';
+
+      // Show events based on selection
+      if (selectedDate) {
+        const dateEvents = allEvents.filter(e => e.date === selectedDate);
+        renderEventList(dateEvents, selectedDate);
+      } else {
+        renderEventList(monthEvents, null);
+      }
+    }
+
+    const buttons = document.querySelectorAll('.my-btn');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        btn.classList.add('clicked');
+
+        setTimeout(() => {
+          btn.classList.remove('clicked');
+        }, 1500);
+      });
+    });
+
+    function selectDate(year, month, day) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      selectedDate = dateStr;
+      expandedEventId = null;
+      renderCalendar();
+      
+      // Show "All Events" button
+      document.getElementById('showAllBtn').style.display = 'inline-block';
+      
+      // Scroll to event list
+      document.getElementById('eventList').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showAllEvents() {
+      selectedDate = null;
+      expandedEventId = null;
+      renderCalendar();
+      document.getElementById('showAllBtn').style.display = 'none';
+    }
+
+    function renderEventList(events, forDate) {
+  const eventItems = document.getElementById('eventItems');
+  const eventList = document.getElementById('eventList');
+  const title = document.getElementById('eventListTitle');
+  
+  if (forDate) {
+    const date = new Date(forDate + 'T00:00:00');
+    const day = date.getDate();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    title.textContent = `Events on ${day} ${month} ${year}`;
+  } else {
+    title.textContent = 'Events This Month';
+  }
+  
+  if (events.length === 0) {
+    eventItems.innerHTML = '<div class="no-events">No events scheduled</div>';
+  } else {
+    eventItems.innerHTML = events.map(event => {
+      // Create safe ID for HTML
+      const safeId = btoa(event.id).replace(/=/g, ''); // Base64 encode and remove =
+      
+      return `
+        <div class="event-line">
+          <div class="event-header" onclick="toggleEvent('${safeId}')">
+            <div style="flex: 1;">
+              <div class="event-title">${event.eventName}</div>
+              <div class="event-meta">
+                <span>📅 ${formatDateDDMMYYYY(event.date)}</span>
+                <span>🕐 ${event.time}</span>
+                <span>📍 ${event.location}</span>
+              </div>
+            </div>
+            <div class="expand-icon" id="icon-${safeId}">▼</div>
+          </div>
+          <div class="event-details" id="details-${safeId}">
+            <div class="event-details-content">
+              ${event.events ? `
+                <div class="detail-section">
+                  <div class="detail-label">📋 Event Details</div>
+                  <div class="detail-content">${event.events}</div>
+                </div>
+              ` : ''}
+              ${event.description ? `
+                <div class="detail-section">
+                  <div class="detail-label">📝 Description</div>
+                  <div class="detail-content">${event.description}</div>
+                </div>
+              ` : ''}
+              ${event.attendeeList ? `
+                <div class="detail-section">
+                  <div class="detail-label">👥 Attendees</div>
+                  <div class="attendee-tags">
+                    ${event.attendeeList.split(',').map(a =>
+                      `<span class="attendee-tag">${a.trim()}</span>`
+                    ).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              ${event.pictureUrl ? `
+                <div class="detail-section">
+                  <div class="detail-label">🖼️ Picture</div>
+                  <img src="${event.pictureUrl}" class="event-image" 
+                       style="cursor: pointer; max-width: 100%; border-radius: 10px;" 
+                       onclick="openImageModal('${event.pictureUrl.replace(/'/g, "\\'")}')"
+                       onerror="this.style.display='none';">
+                </div>
+              ` : ''}
+              ${renderFiles(event.fileIds, event.id)}
+              ${isOwner ? `
+                <div class="upload-section">
+                  <h4>📎 Upload Files</h4>
+                  <div id="msg-${safeId}"></div>
+                  <input type="file" id="file-${safeId}" class="file-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple>
+                  <label for="file-${safeId}" class="file-label">Choose Files</label>
+                  <span class="file-name" id="name-${safeId}">No file chosen</span>
+                  <button class="upload-btn" onclick="uploadFiles('${event.id}', event)">Upload</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    // Add file input listeners
+    if (isOwner) {
+      events.forEach(event => {
+        const safeId = btoa(event.id).replace(/=/g, '');
+        const input = document.getElementById(`file-${safeId}`);
+        if (input) {
+          input.addEventListener('change', function(e) {
+            const files = e.target.files;
+            const span = document.getElementById(`name-${safeId}`);
+            span.textContent = files.length === 0 ? 'No file chosen' :
+              files.length === 1 ? files[0].name :
+              `${files.length} files selected`;
+          });
+        }
+      });
+    }
+  }
+  
+  eventList.style.display = 'block';
+}
+
+    function renderFiles(fileIds, eventId) {
+  if (!fileIds || !fileIds.trim()) return '';
+  
+  const ids = fileIds.split(',').filter(id => id.trim());
+  if (ids.length === 0) return '';
+  
+  // Create safe ID for HTML elements
+  const safeId = btoa(eventId).replace(/=/g, '');
+  
+  return `
+    <div class="detail-section">
+      <div class="detail-label">📁 Uploaded Files</div>
+      <div class="file-list">
+        ${ids.map((id, i) => {
+          const trimmedId = id.trim();
+          // Escape the event ID properly
+          const escapedEventId = eventId.replace(/'/g, "\\'");
+          
+          return `
+            <div class="file-item" id="file-item-${safeId}-${i}">
+              <span>📄 File ${i + 1}</span>
+              <div class="file-actions">
+                <a href="https://drive.google.com/file/d/${trimmedId}/view" 
+                   target="_blank" class="file-link">View</a>
+                ${isOwner ? `
+                  <button class="delete-file-btn" 
+                          onclick="deleteFile('${trimmedId}', '${escapedEventId}', event)">
+                    Delete
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+} 
+
+    function toggleEvent(eventId) {
+  const details = document.getElementById(`details-${eventId}`);
+  const icon = document.getElementById(`icon-${eventId}`);
+  
+  if (!details || !icon) {
+    console.error('Elements not found for event:', eventId);
+    return;
+  }
+  
+  if (expandedEventId && expandedEventId !== eventId) {
+    const prevDetails = document.getElementById(`details-${expandedEventId}`);
+    const prevIcon = document.getElementById(`icon-${expandedEventId}`);
+    if (prevDetails) prevDetails.classList.remove('expanded');
+    if (prevIcon) prevIcon.classList.remove('expanded');
+  }
+  
+  if (details.classList.contains('expanded')) {
+    details.classList.remove('expanded');
+    icon.classList.remove('expanded');
+    expandedEventId = null;
+  } else {
+    details.classList.add('expanded');
+    icon.classList.add('expanded');
+    expandedEventId = eventId;
+  }
+}
+
+    function uploadFiles(eventId, e) {
+  e.stopPropagation();
+  
+  const safeId = btoa(eventId).replace(/=/g, '');
+  const input = document.getElementById(`file-${safeId}`);
+  const btn = e.target;
+  const msg = document.getElementById(`msg-${safeId}`);
+  const files = input.files;
+  
+  if (files.length === 0) {
+    msg.innerHTML = '<div class="alert alert-error">Please select files</div>';
+    setTimeout(() => msg.innerHTML = '', 3000);
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Uploading...';
+  msg.innerHTML = '<div class="alert alert-success">Processing files...</div>';
+  
+  let processed = 0;
+  const totalFiles = files.length;
+  
+  Array.from(files).forEach((file, index) => {
+    // Check if it's an image
+    if (file.type.startsWith('image/')) {
+      // Compress image if over 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        msg.innerHTML = `<div class="alert alert-success">Compressing image ${index + 1}/${totalFiles}...</div>`;
+        compressAndUpload(file, eventId, safeId, () => {
+          processed++;
+          if (processed === totalFiles) {
+            uploadComplete(safeId, btn, input, msg);
+          }
+        });
+      } else {
+        uploadSingleFile(file, eventId, safeId, () => {
+          processed++;
+          if (processed === totalFiles) {
+            uploadComplete(safeId, btn, input, msg);
+          }
+        });
+      }
+    } else {
+      // Non-image files (PDF, docs, etc.)
+      if (file.size > 10 * 1024 * 1024) {
+        msg.innerHTML = '<div class="alert alert-error">File too large. Maximum 10MB for documents.</div>';
+        btn.disabled = false;
+        btn.textContent = 'Upload';
+        return;
+      }
+      uploadSingleFile(file, eventId, safeId, () => {
+        processed++;
+        if (processed === totalFiles) {
+          uploadComplete(safeId, btn, input, msg);
+        }
+      });
+    }
+  });
+}
+
+function compressAndUpload(file, eventId, safeId, callback) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      
+      // Max dimensions
+      const maxWidth = 1920;
+      const maxHeight = 1920;
+      
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = (height / width) * maxWidth;
+          width = maxWidth;
+        } else {
+          width = (width / height) * maxHeight;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Compress to JPEG with quality adjustment
+      let quality = 0.7;
+      let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      
+      // Keep compressing until under 5MB
+      while (compressedDataUrl.length > 5 * 1024 * 1024 && quality > 0.1) {
+        quality -= 0.1;
+        compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+      
+      if (compressedDataUrl.length > 5 * 1024 * 1024) {
+        alert('Could not compress image below 5MB. Please use a smaller image.');
+        callback();
+        return;
+      }
+      
+      const data = compressedDataUrl.split(',')[1];
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            callback();
+          })
+          .withFailureHandler(function(error) {
+            console.error('Upload error:', error);
+            callback();
+          })
+          .uploadFile(data, file.name, 'image/jpeg', eventId);
+      } else {
+        postToScript({ action: 'uploadFile', fileData: data, fileName: file.name, mimeType: 'image/jpeg', eventId: eventId })
+          .then(res => { callback(); })
+          .catch(err => { console.error('Upload error:', err); callback(); });
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function uploadSingleFile(file, eventId, safeId, callback) {
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const data = ev.target.result.split(',')[1];
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(result) { callback(); })
+          .withFailureHandler(function(error) { console.error('Upload error:', error); callback(); })
+          .uploadFile(data, file.name, file.type, eventId);
+      } else {
+        postToScript({ action: 'uploadFile', fileData: data, fileName: file.name, mimeType: file.type, eventId: eventId })
+          .then(res => callback())
+          .catch(err => { console.error('Upload error:', err); callback(); });
+      }
+  };
+  reader.readAsDataURL(file);
+}
+
+function uploadComplete(safeId, btn, input, msg) {
+  msg.innerHTML = '<div class="alert alert-success">All files uploaded successfully!</div>';
+  btn.disabled = false;
+  btn.textContent = 'Upload';
+  input.value = '';
+  document.getElementById(`name-${safeId}`).textContent = 'No file chosen';
+  
+  setTimeout(() => {
+    msg.innerHTML = '';
+    loadEvents();
+  }, 1000);
+}
+
+    function deleteFile(fileId, eventId, e) {
+  e.stopPropagation();
+  
+  console.log('=== Delete File Debug ===');
+  console.log('File ID:', fileId);
+  console.log('Event ID (encoded):', eventId);
+  
+  // Decode if it's base64 encoded
+  let decodedEventId = eventId;
+  try {
+    // Check if it looks like base64
+    if (/^[A-Za-z0-9+/]+=*$/.test(eventId) && eventId.length > 20) {
+      decodedEventId = atob(eventId);
+      console.log('Decoded Event ID:', decodedEventId);
+    }
+  } catch (e) {
+    console.log('Not base64, using as-is');
+  }
+  
+  if (!confirm('Are you sure you want to delete this file?')) {
+    return;
+  }
+  
+  const btn = e.target;
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+  
+  console.log('Calling deleteFile API with decoded ID:', decodedEventId);
+  
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        console.log('Delete API result:', result);
+        btn.textContent = originalText;
+        btn.disabled = false;
+        if (result && result.success) {
+          showAlert('File deleted successfully!', 'success');
+          setTimeout(() => { loadEvents(); }, 1000);
+        } else {
+          const errorMsg = result ? result.message : 'Unknown error';
+          showAlert('Delete failed: ' + errorMsg, 'error');
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Delete API error:', error);
+        btn.textContent = originalText;
+        btn.disabled = false;
+        showAlert('Error: ' + error, 'error');
+      })
+      .deleteFile(fileId, decodedEventId);
+    return;
+  }
+
+  // Fallback: POST deleteFile
+  postToScript({ action: 'deleteFile', fileId: fileId, eventId: decodedEventId })
+    .then(result => {
+      console.log('Delete API result:', result);
+      btn.textContent = originalText;
+      btn.disabled = false;
+      if (result && result.success) {
+        showAlert('File deleted successfully!', 'success');
+        setTimeout(() => { loadEvents(); }, 1000);
+      } else {
+        showAlert('Delete failed: ' + (result.message || result.error || 'Unknown'), 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Delete API error:', err);
+      btn.textContent = originalText;
+      btn.disabled = false;
+      showAlert('Error: ' + err, 'error');
+    });
+}
+
+    function truncateText(text, len) {
+      if (!text) return 'No details';
+      return text.length <= len ? text : text.substring(0, len) + '...';
+    }
+
+    function formatDateDDMMYYYY(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const parts = dateStr.split('-');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${parts[2]}-${months[parseInt(parts[1]) - 1]}-${parts[0]}`;
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    function previousMonth() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      selectedDate = null;
+      expandedEventId = null;
+      document.getElementById('showAllBtn').style.display = 'none';
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      selectedDate = null;
+      expandedEventId = null;
+      document.getElementById('showAllBtn').style.display = 'none';
+      renderCalendar();
+    }
+
+    // Button reference
+    const backToTopBtn = document.getElementById("backToTopBtn");
+
+    // Scroll la show / hide
+    window.addEventListener("scroll", function () {
+      if (window.scrollY > 100) {          // 100px mela scroll aana piragu dhaan kaatu
+        backToTopBtn.style.display = "block";
+      } else {
+        backToTopBtn.style.display = "none";
+      }
+    });
+
+    // Click pannina smooth‑ah top ku scroll + top la poi maranjidum
+    backToTopBtn.addEventListener("click", function () {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
+
+    function showAlert(message, type) {
+  const alertBox = document.getElementById('alertBox');
+  
+  if (!alertBox) {
+    // Fallback if alert box doesn't exist
+    alert(message);
+    return;
+  }
+  
+  alertBox.className = `alert alert-${type}`;
+  alertBox.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
+  alertBox.style.display = 'block';
+  
+  // Auto hide after 5 seconds
+  setTimeout(() => {
+    alertBox.style.display = 'none';
+  }, 5000);
+  
+  // Scroll to top to show alert
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+    function openImageModal(imageUrl) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+  
+      modal.style.display = 'flex';
+      modalImg.src = imageUrl;
+  
+      // Close on click outside
+      modal.onclick = function(e) {
+        if (e.target === modal || e.target === modalImg.parentElement) {
+          closeImageModal();
+        }
+      };
+    }
+
+    function closeImageModal() {
+      document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+
+
+    // Initialization is handled on window load to ensure authentication runs first
+
+  </script>
+</body>
+</html>

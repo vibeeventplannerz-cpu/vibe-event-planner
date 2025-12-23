@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#667eea">
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
+  
+  <title>Admin Panel</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header h1 {
+      color: white;
+      font-size: 2em;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .alert {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .event-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .event-table th {
+      background: #667eea;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+
+    .event-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 0.9em;
+    }
+
+    .event-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.85em;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background: white;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 900px;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      color: #667eea;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2em;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-btn:hover {
+      color: #333;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .header-buttons {
+        flex-direction: column;
+      }
+
+      .event-table {
+        font-size: 0.8em;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 Admin Panel</h1>
+      <div class="header-buttons">
+        <button class="btn btn-primary" onclick="openEventsGallery()">📸 Events Gallery</button>
+        <button class="btn btn-primary" onclick="openCalendar()">📅 View Calendar</button>
+        <button class="btn btn-success" onclick="openAddModal()">➕ Add Event</button>
+      </div>
+    </div>
+
+    <div id="alertBox" class="alert"></div>
+
+    <div class="card">
+      <h2 style="color: #667eea; margin-bottom: 20px;">Manage Events</h2>
+      <div id="loading" class="loading">Loading events...</div>
+      <div id="eventsTable" style="display: none; overflow-x: auto;">
+        <table class="event-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Event Name</th>
+              <th style="width: 25%;">Events</th>
+              <th style="width: 12%;">Date</th>
+              <th style="width: 10%;">Time</th>
+              <th style="width: 15%;">Location</th>
+              <th style="width: 13%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="eventModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add New Event</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="eventForm" onsubmit="saveEvent(event)">
+        <input type="hidden" id="eventId">
+        
+        <div class="form-group">
+          <label for="eventName">Event Name *</label>
+          <input type="text" id="eventName" required placeholder="e.g., Birthday Party">
+        </div>
+
+        <div class="form-group">
+          <label for="eventEvents">Events (What's happening) *</label>
+          <textarea id="eventEvents" required placeholder="Describe what will happen at this event..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventDate">Date (DD-MM-YYYY) *</label>
+            <input type="date" id="eventDate" required>
+          </div>
+          <div class="form-group">
+            <label for="eventTime">Time *</label>
+            <input type="time" id="eventTime" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="eventLocation">Location *</label>
+          <input type="text" id="eventLocation" required placeholder="e.g., Chennai">
+        </div>
+
+        <div class="form-group">
+          <label for="eventDescription">Description</label>
+          <textarea id="eventDescription" placeholder="Additional details..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="eventAttendees">Attendee List (comma-separated)</label>
+          <input type="text" id="eventAttendees" value="Nandha" placeholder="John, Jane, Bob">
+        </div>
+
+        <div class="form-group">
+          <label for="eventPicture">Picture URL</label>
+          <input type="url" id="eventPicture" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-success">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PWA Scripts -->
+  <script src="/sw-register.js"></script>
+
+  <script>
+
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
+
+    // Admin Authentication Check
+    window.addEventListener('load', function() {
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
+      const isAdmin = localStorage.getItem('isAdmin');
+      const userEmail = localStorage.getItem('userEmail');
+      
+      if (!isAuthenticated || !userEmail) {
+        alert('Please login first');
+        window.location.href = '/index.html';
+        return;
+      }
+      
+      if (isAdmin !== 'true') {
+        alert('Access Denied: Admin only');
+        window.location.href = '/calendar.html';
+        return;
+      }
+      
+      // Admin verified - continue
+      console.log('Admin access granted:', userEmail);
+      initApp();
+    });
+
+
+    let allEvents = [];
+    let webAppUrl = '';
+
+    function initApp() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(url) {
+            webAppUrl = url;
+            loadEvents();
+          })
+          .getWebAppUrl();
+      } else if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+        webAppUrl = SCRIPT_URL;
+        loadEvents();
+      } else {
+        // No backend configured - show message and keep demo data
+        document.getElementById('loading').innerText = 'No backend configured.';
+      }
+    }
+
+    // Helper to POST to Apps Script REST endpoint
+    function postToScript(payload) {
+      const idToken = localStorage.getItem('googleToken') || '';
+      const body = Object.assign({}, payload, { id_token: idToken });
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(r => r.json());
+    }
+
+    function loadEvents() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(events) {
+            allEvents = events || [];
+            displayEvents(allEvents);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('eventsTable').style.display = 'block';
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Error loading events: ' + error.message + '</div>';
+          })
+          .getEvents();
+        return;
+      }
+
+      // Fallback to fetch API
+      const userEmail = localStorage.getItem('userEmail') || '';
+      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+        fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data && data.success && data.events) {
+              allEvents = data.events;
+              displayEvents(allEvents);
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('eventsTable').style.display = 'block';
+            } else {
+              document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Failed to load events</div>';
+            }
+          })
+          .catch(err => {
+            document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Error loading events: ' + err + '</div>';
+          });
+      } else {
+        document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">No backend configured</div>';
+      }
+    }
+
+    function displayEvents(events) {
+      const tbody = document.getElementById('eventTableBody');
+  
+      if (events.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No events yet. Click "Add Event" to create one.</td></tr>';
+        return;
+      }
+  
+      tbody.innerHTML = events.map(event => {
+        const eventId = event.id.replace(/'/g, "\\'"); // Escape single quotes
+        const eventName = escapeHtml(event.eventName);
+    
+        return `
+          <tr>
+            <td><strong>${event.eventName}</strong></td>
+            <td>${truncateText(event.events, 50)}</td>
+            <td>${formatDateDDMMYYYY(event.date)}</td>
+            <td>${event.time}</td>
+            <td>${event.location}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-primary btn-small" onclick='editEvent(\`${eventId}\`)'>Edit</button>
+                <button class="btn btn-danger btn-small" onclick='confirmDelete(\`${eventId}\`, "${eventName}")'>Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function truncateText(text, maxLength) {
+      if (!text) return '';
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    function formatDateDDMMYYYY(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'Add New Event';
+      document.getElementById('eventForm').reset();
+      document.getElementById('eventId').value = '';
+      document.getElementById('eventModal').style.display = 'block';
+    }
+
+    function editEvent(eventId) {
+      const event = allEvents.find(e => e.id === eventId);
+      if (!event) return;
+  
+      document.getElementById('modalTitle').textContent = 'Edit Event';
+      document.getElementById('eventId').value = event.id;
+      document.getElementById('eventName').value = event.eventName;
+      document.getElementById('eventEvents').value = event.events;
+      document.getElementById('eventDate').value = event.date;
+  
+      const time = convertTo24Hour(event.time);
+      document.getElementById('eventTime').value = time;
+  
+      document.getElementById('eventLocation').value = event.location;
+      document.getElementById('eventDescription').value = event.description;
+      document.getElementById('eventAttendees').value = event.attendeeList;
+      document.getElementById('eventPicture').value = event.pictureUrl;
+  
+      document.getElementById('eventModal').style.display = 'block';
+    }
+
+    function convertTo24Hour(time12h) {
+      if (!time12h) return '';
+      const [time, modifier] = time12h.split(' ');
+      let [hours, minutes] = time.split(':');
+      
+      if (hours === '12') {
+        hours = '00';
+      }
+      
+      if (modifier === 'PM') {
+        hours = parseInt(hours, 10) + 12;
+      }
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    }
+
+    function closeModal() {
+      document.getElementById('eventModal').style.display = 'none';
+    }
+
+    function saveEvent(e) {
+      e.preventDefault();
+
+      const eventId = document.getElementById('eventId').value;
+      const eventData = {
+        eventName: document.getElementById('eventName').value,
+        events: document.getElementById('eventEvents').value,
+        date: document.getElementById('eventDate').value,
+        time: formatTime(document.getElementById('eventTime').value),
+        location: document.getElementById('eventLocation').value,
+        description: document.getElementById('eventDescription').value,
+        attendeeList: document.getElementById('eventAttendees').value,
+        pictureUrl: document.getElementById('eventPicture').value
+      };
+
+      const saveBtn = e.target.querySelector('button[type="submit"]');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      // If google.script.run is available (Apps Script hosting), use it.
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const runFn = eventId ? google.script.run.withSuccessHandler(function(result) {
+          if (result.success) {
+            showAlert(result.message, 'success');
+            closeModal();
+            loadEvents();
+          } else {
+            showAlert(result.message, 'error');
+          }
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Event';
+        }).withFailureHandler(function(error) {
+          showAlert('Error: ' + error, 'error');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Event';
+        }) : google.script.run.withSuccessHandler(function(result) {
+          if (result.success) {
+            showAlert(result.message, 'success');
+            closeModal();
+            loadEvents();
+          } else {
+            showAlert(result.message, 'error');
+          }
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Event';
+        }).withFailureHandler(function(error) {
+          showAlert('Error: ' + error, 'error');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Event';
+        });
+
+        if (eventId) runFn.updateEvent(eventId, eventData); else runFn.addEvent(eventData);
+        return;
+      }
+
+      // Fallback for static hosting: POST to SCRIPT_URL with id_token
+      const payload = { action: eventId ? 'updateEvent' : 'addEvent', eventData: eventData };
+      if (eventId) payload.eventId = eventId;
+      const idToken = localStorage.getItem('googleToken') || '';
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({}, payload, { id_token: idToken }))
+      })
+      .then(r => r.json())
+      .then(result => {
+        if (result.success) {
+          showAlert(result.message || 'Saved', 'success');
+          closeModal();
+          loadEvents();
+        } else {
+          showAlert(result.message || result.error || 'Save failed', 'error');
+        }
+      })
+      .catch(err => showAlert('Error: ' + err, 'error'))
+      .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Event';
+      });
+
+    }
+
+    function formatTime(time24h) {
+      if (!time24h) return '';
+      const [hours, minutes] = time24h.split(':');
+      let hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12;
+      return `${hour}:${minutes} ${ampm}`;
+    }
+
+    function confirmDelete(eventId, eventName) {
+      if (confirm(`Are you sure you want to delete "${eventName}"?\n\nThis will also delete all associated files.`)) {
+        deleteEvent(eventId);
+      }
+    }
+
+    function deleteEvent(eventId) {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.success) {
+              showAlert(result.message, 'success');
+              loadEvents();
+            } else {
+              showAlert(result.message, 'error');
+            }
+          })
+          .withFailureHandler(function(error) {
+            showAlert('Error: ' + error, 'error');
+          })
+          .deleteEvent(eventId);
+        return;
+      }
+
+      // Fallback to REST POST
+      postToScript({ action: 'deleteEvent', eventId: eventId })
+        .then(result => {
+          if (result && result.success) {
+            showAlert(result.message || 'Event deleted', 'success');
+            loadEvents();
+          } else {
+            showAlert(result.message || result.error || 'Delete failed', 'error');
+          }
+        })
+        .catch(err => showAlert('Error: ' + err, 'error'));
+    }
+
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.className = `alert alert-${type}`;
+      alertBox.textContent = message;
+      alertBox.style.display = 'block';
+
+      setTimeout(() => {
+        alertBox.style.display = 'none';
+      }, 5000);
+    }
+
+    function openCalendar() {
+      window.location.href = '/calendar.html';
+    }
+
+    function openEventsGallery() {
+      window.location.href = '/events.html';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('eventModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    // Initialize app (called after admin verification inside load handler)
+  </script>
+</body>
+</html>

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#667eea">
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
+  
+  <title>Events Gallery</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .header h1 {
+      color: white;
+      font-size: 2em;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
+    }
+    
+    .month-navigation {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 25px;
+      padding: 25px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      color: white;
+      gap: 15px;
+    }
+    
+    .month-title {
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+    
+    .month-buttons {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .month-btn {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid white;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 120px;
+      justify-content: center;
+    }
+    
+    .month-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .month-btn:hover:not(:disabled) {
+      background: white;
+      color: #667eea;
+      transform: translateY(-2px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #667eea;
+      font-size: 1.2em;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .debug-info {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 12px;
+      display: none;
+    }
+    
+    .show-debug {
+      display: block !important;
+    }
+    
+    .search-filter {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+    
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 12px 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1em;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+    }
+    
+    .event-card {
+      background: #f0f0f0;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      position: relative;
+    }
+    
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      border-color: #667eea;
+    }
+    
+    .event-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 3em;
+      cursor: pointer;
+    }
+    
+    .event-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .event-content {
+      padding: 20px;
+    }
+    
+    .event-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    
+    .event-meta {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      color: #636363;
+      font-size: 0.9em;
+      margin-bottom: 15px;
+    }
+    
+    .event-meta.expanded {
+      display: flex;
+    }
+    
+    .event-meta span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .event-description {
+      color: #555;
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      display: none;
+    }
+    
+    .event-description.expanded {
+      display: block;
+    }
+    
+    .event-actions {
+      display: flex;
+      gap: 10px;
+      padding-top: 15px;
+      border-top: 1px solid #e0e0e0;
+      margin-top: 10px;
+    }
+    
+    .btn-edit {
+      background: #667eea;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+    
+    .btn-edit:hover {
+      background: #5568d3;
+    }
+    
+    .expand-icon {
+      position: absolute;
+      top: 215px;
+      right: 15px;
+      background: #667eea;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 10;
+    }
+    
+    .expand-icon:hover {
+      background: #5568d3;
+      transform: scale(1.1);
+    }
+    
+    .expand-icon.expanded {
+      transform: rotate(180deg);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #667eea;
+      font-size: 1.2em;
+    }
+    
+    .no-events {
+      text-align: center;
+      padding: 60px;
+      color: #999;
+      font-size: 1.2em;
+    }
+    
+    #backToTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+      background: #667eea;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      font-size: 20px;
+      transition: all 0.3s;
+      z-index: 999;
+    }
+    
+    #backToTopBtn:hover {
+      background: #5568d3;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.4);
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .modal-content {
+      background: white;
+      margin: 50px auto;
+      padding: 35px;
+      border-radius: 20px;
+      max-width: 700px;
+      position: relative;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .modal-header h2 {
+      color: #667eea;
+      font-size: 1.8em;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2em;
+      cursor: pointer;
+      color: #999;
+      transition: all 0.3s;
+    }
+    
+    .close-btn:hover {
+      color: #333;
+      transform: rotate(90deg);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+    }
+    
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 120px;
+    }
+    
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .file-upload-area {
+      border: 2px dashed #667eea;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      background: #f0f4ff;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .file-upload-area:hover {
+      background: #e6edff;
+      border-color: #5568d3;
+    }
+    
+    .file-upload-area i {
+      font-size: 3em;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      margin-top: 15px;
+      display: none;
+    }
+    
+    .alert {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+
+    
+
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .header h1 {
+        font-size: 1.5em;
+      }
+      
+      .nav-buttons {
+        flex-direction: column;
+      }
+      
+      #adminBtn {
+        display: none !important;
+      }
+      
+      .month-navigation {
+        padding: 20px 15px;
+      }
+      
+      .month-title {
+        font-size: 1.5em;
+        text-align: center;
+      }
+      
+      .month-buttons {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      
+      .month-btn {
+        flex: 1;
+        min-width: auto;
+        padding: 10px 15px;
+      }
+      
+      .events-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      
+      
+      .event-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    margin-bottom: 15px;
+    min-height: 100px;
+  }
+  
+  .event-image {
+    display: none !important;
+  }
+  
+  .event-content {
+    flex: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .event-title {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+  }
+  
+  .event-meta {
+    display: flex !important;
+    flex: 1;
+  }
+  
+  .event-actions {
+    border-top: none;
+    padding-top: 0;
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .event-actions-mob {
+    border-top: none;
+    padding-top: 10px;
+    margin-left: auto;
+  }
+  
+  .btn-edit {
+    width: auto;
+    padding: 8px 16px;
+    font-size: 0.9em;
+  }
+
+  
+  .event-description {
+    display: none;
+  }
+
+  .expand-icon {
+    display: none !important;
+  }
+      
+      .modal-content {
+        margin: 20px auto;
+        padding: 25px;
+      }
+      
+      .modal-header h2 {
+        font-size: 1.4em;
+      }
+      
+      .form-group textarea {
+        font-size: 16px;
+      }
+      
+      .form-group textarea#eventDescription {
+        min-height: 150px;
+      }
+      
+      .file-upload-area {
+        padding: 20px;
+      }
+      
+      .file-upload-area i {
+        font-size: 2em;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
+      #backToTopBtn {
+        width: 45px;
+        height: 45px;
+        bottom: 15px;
+        right: 15px;
+      }
+
+      .event-card-detail {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Rendu column-ah pirikkum */
+        gap: 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .event-image {
+        height: 180px;
+      }
+      
+      .expand-icon {
+        top: 175px;
+      }
+      
+      .event-content {
+        padding: 15px;
+      }
+      
+      .event-title {
+        font-size: 1.1em;
+      }
+      #event-edit-desktop {
+        display: none;
+      }
+    }
+    
+    @media (min-width: 769px) {
+      .event-meta {
+        display: flex !important;
+      }
+      
+      .event-description {
+        display: block !important;
+      }
+      
+      .expand-icon {
+        display: none;
+      }
+      
+      .event-actions {
+        margin-top: 0;
+      }
+      #event-edit-mob {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📸 Events Gallery</h1>
+      <div class="nav-buttons">
+        <button class="btn btn-primary" onclick="goToCalendar()">
+          <i class="fas fa-calendar"></i> Calendar
+        </button>
+        <button class="btn btn-primary" id="adminBtn" style="display: none;" onclick="goToAdmin()">
+          <i class="fas fa-tools"></i> Admin Panel
+        </button>
+        <button class="btn btn-primary" onclick="toggleDebug()">
+          🐛 Debug
+        </button>
+      </div>
+    </div>
+    
+    <div id="alertBox" class="alert"></div>
+
+    <!-- Debug Info -->
+    <div id="debugInfo" class="debug-info">
+      <strong>Debug Information:</strong><br>
+      <div id="debugContent"></div>
+    </div>
+    
+    <div class="card">
+      <div class="month-navigation">
+        <div class="month-title" id="monthTitle">Loading...</div>
+        <div class="month-buttons">
+          <button class="month-btn" id="prevBtn" onclick="previousMonth()" disabled>
+            <i class="fas fa-arrow-left"></i> <span class="btn-text">Previous</span>
+          </button>
+          <button class="month-btn" id="nextBtn" onclick="nextMonth()">
+            <span class="btn-text">Next</span> <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="search-filter">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by event name, date, or location...">
+      </div>
+      
+      <div id="loadingSection" class="loading">
+        <div class="spinner"></div>
+        <p>Loading events...</p>
+      </div>
+      
+      <div id="errorSection" style="display: none;"></div>
+      
+      <div id="eventsGrid" class="events-grid" style="display: none;"></div>
+    </div>
+  </div>
+  
+  <button id="backToTopBtn" aria-label="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+  
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2><i class="fas fa-edit"></i> Edit Event</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      
+      <form id="editForm" onsubmit="saveEvent(event)">
+        <input type="hidden" id="eventId">
+        
+        <div class="form-group">
+          <label for="eventEvents"><i class="fas fa-list"></i> Events *</label>
+          <textarea id="eventEvents" required placeholder="Describe what will happen at this event..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="eventDescription"><i class="fas fa-align-left"></i> Description *</label>
+          <textarea id="eventDescription" required placeholder="Additional details about the event..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fas fa-image"></i> Event Picture</label>
+  
+          <!-- Show current picture if exists -->
+          <div id="currentPictureSection" style="display: none; margin-bottom: 15px;">
+            <img id="currentPicture" src="" style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 10px;">
+            <button type="button" class="btn" style="background: #dc3545; color: white; width: 100%; padding: 10px;" onclick="deletePicture()">
+              <i class="fas fa-trash"></i> Delete Current Picture
+            </button>
+          </div>
+  
+          <div class="file-upload-area" onclick="document.getElementById('pictureInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload picture</p>
+            <small>JPG, PNG, GIF supported</small>
+          </div>
+          <input type="file" id="pictureInput" class="file-input" accept="image/*" onchange="handleImageUpload(event)" capture="environment">
+          <img id="previewImage" class="preview-image">
+          <input type="url" id="eventPicture" placeholder="Or paste image URL" style="width: 100%; margin-top: 10px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+        </div>
+
+        <!-- <div class="form-group">
+          <label><i class="fas fa-image"></i> Event Picture (URL only)</label>
+          <input type="url" id="eventPicture" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
+          <small style="color: #666; display: block; margin-top: 5px;">Paste image URL from Google Drive, Imgur, or any image hosting service</small>
+        </div> -->
+        
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PWA Scripts -->
+  <script src="/sw-register.js"></script>
+  
+  <script>
+
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec'; // ⚠️ இங்க உங்க Apps Script URL போடுங்க
+
+    // Authentication Check
+    window.addEventListener('load', function() {
+      // Authentication helper: if you want the events page to be public,
+      // comment out the redirect below. Currently we do not force a redirect
+      // here (admin-only checks belong in admin.html).
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
+      const userEmail = localStorage.getItem('userEmail');
+
+      if (!isAuthenticated || !userEmail) {
+        // Not authenticated — continue as anonymous (no redirect).
+        console.log('User not authenticated; continuing as anonymous');
+      } else {
+        console.log('Authenticated user:', userEmail);
+      }
+    });
+
+
+    let allEvents = [];
+    let currentMonthEvents = [];
+    let webAppUrl = '';
+    let isOwner = false;
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    const todayMonth = new Date().getMonth();
+    const todayYear = new Date().getFullYear();
+    let expandedEventId = null;
+    
+    function initApp() {
+      // If running inside Google Apps Script web app, use its URL and server calls.
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(url) {
+            webAppUrl = url;
+            checkOwner();
+            loadEvents();
+          })
+          .getWebAppUrl();
+      } else if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+        // Netlify/static deployment: use configured SCRIPT_URL for API calls
+        webAppUrl = SCRIPT_URL;
+        checkOwner();
+        loadEvents();
+      } else {
+        // No backend configured — run in demo mode
+        checkOwner();
+        loadEvents();
+      }
+
+      document.getElementById('searchInput').addEventListener('input', function(e) {
+        filterEvents(e.target.value);
+      });
+
+      // Back to top button
+      window.addEventListener('scroll', function() {
+        const btn = document.getElementById('backToTopBtn');
+        if (window.scrollY > 100) {
+          btn.style.display = 'block';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+
+      document.getElementById('backToTopBtn').addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    // Helper to POST to Apps Script REST endpoint when not running inside HtmlService
+    function postToScript(payload) {
+      const idToken = localStorage.getItem('googleToken') || '';
+      const body = Object.assign({}, payload, { id_token: idToken });
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(r => r.json());
+    }
+
+    function checkOwner() {
+      // Prefer server-side google.script.run if available
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(owner) {
+            isOwner = owner;
+            if (owner && window.innerWidth > 768) {
+              document.getElementById('adminBtn').style.display = 'block';
+            }
+          })
+          .isOwner();
+        return;
+      }
+
+      // Fallback: call REST-style API at SCRIPT_URL?action=checkAdmin&email=...
+      const userEmail = localStorage.getItem('userEmail') || '';
+      if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE' && userEmail) {
+        fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(userEmail)}`)
+          .then(res => res.json())
+          .then(data => {
+            isOwner = !!(data && data.isAdmin);
+            if (isOwner && window.innerWidth > 768) {
+              document.getElementById('adminBtn').style.display = 'block';
+            }
+          })
+          .catch(err => {
+            console.log('checkOwner fetch error', err);
+          });
+      }
+    }
+    
+    function loadEvents() {
+      log('Loading events...');
+      
+      showLoading(true);
+      hideError();
+      
+      // Method 1: Try Google Apps Script (if available)
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        log('Using Google Apps Script API');
+        
+        google.script.run
+          .withSuccessHandler(handleEventsSuccess)
+          .withFailureHandler(handleEventsError)
+          .getEvents();
+      } 
+      // Method 2: Try Fetch API (for Netlify deployment)
+      else if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+        log('Using Fetch API with URL:', SCRIPT_URL);
+        
+        const userEmail = localStorage.getItem('userEmail');
+        fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
+          .then(response => {
+            log('Fetch response received', response.status);
+            return response.json();
+          })
+          .then(data => {
+            log('Events data received', data);
+            if (data.success && data.events) {
+              handleEventsSuccess(data.events);
+            } else {
+              throw new Error(data.error || 'Failed to load events');
+            }
+          })
+          .catch(error => {
+            log('Fetch error', error);
+            handleEventsError(error);
+          });
+      }
+      // Method 3: Load demo data
+      else {
+        log('Loading demo data (no API configured)');
+        setTimeout(() => {
+          handleEventsSuccess(getDemoEvents());
+        }, 1000);
+      }
+    }
+    
+    function updateMonthDisplay() {
+      log('Updating month display', { currentMonth, currentYear });
+      
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+      
+      document.getElementById('monthTitle').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+      
+      currentMonthEvents = allEvents.filter(event => {
+        if (!event.date) return false;
+        const eventDate = new Date(event.date + 'T00:00:00');
+        return eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
+      });
+      
+      log('Filtered events for current month', { count: currentMonthEvents.length });
+      
+      const prevBtn = document.getElementById('prevBtn');
+      const isCurrentMonth = currentMonth === todayMonth && currentYear === todayYear;
+      prevBtn.disabled = isCurrentMonth;
+      
+      displayEvents(currentMonthEvents);
+    }
+    
+    function previousMonth() {
+      if (currentMonth === todayMonth && currentYear === todayYear) return;
+      
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      
+      updateMonthDisplay();
+    }
+    
+    function nextMonth() {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      
+      updateMonthDisplay();
+    }
+    
+
+    function displayEvents(events) {
+
+      log('Displaying events', { count: events.length });
+
+  const grid = document.getElementById('eventsGrid');
+  
+  if (events.length === 0) {
+    grid.innerHTML = '<div class="no-events"><i class="fas fa-calendar-times"></i><br>No events found for this month</div>';
+    return;
+  }
+  
+  events.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  grid.innerHTML = events.map(event => {
+    const hasImage = event.pictureUrl && event.pictureUrl.trim() !== '';
+    const imageHtml = hasImage 
+      ? `<img src="${event.pictureUrl}" alt="${event.eventName}" 
+             onerror="this.parentElement.innerHTML='<i class=\\'fas fa-calendar-alt\\'></i>'">`
+      : '<i class="fas fa-calendar-alt"></i>';
+    
+    const eventId = event.id.replace(/'/g, "\\'"); // Escape quotes
+      
+    return `
+      <div class="event-card" id="card-${btoa(event.id).replace(/=/g, '')}">
+        <div class="event-image">
+          ${imageHtml}
+        </div>
+        <div class="event-content">
+          <div class="event-title">${event.eventName}</div>
+              <div class="event-card-detail">
+                <div class="event-meta" id="meta-${btoa(event.id).replace(/=/g, '')}">
+                  <span><i class="fas fa-calendar-day"></i> ${formatDate(event.date)}</span>
+                  <span><i class="fas fa-clock"></i> ${event.time}</span>
+                  <span><i class="fas fa-map-marker-alt"></i> ${event.location}</span>
+                </div>
+                <div class="event-actions-mob" id="event-edit-mob">
+                  <button class="btn-edit" onclick="editEvent(\`${eventId}\`)">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                </div>
+              </div>
+          ${isOwner ? `
+            <div class="event-actions" id="event-edit-desktop">
+              <button class="btn-edit" onclick='editEvent(\`${eventId}\`)'>
+                <i class="fas fa-edit"></i> Edit
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+    
+    
+    
+    function filterEvents(searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      
+      if (term === '') {
+        displayEvents(currentMonthEvents);
+        return;
+      }
+      
+      const filtered = currentMonthEvents.filter(event => {
+        const eventDate = formatDate(event.date).toLowerCase();
+        return event.eventName.toLowerCase().includes(term) ||
+               event.location.toLowerCase().includes(term) ||
+               eventDate.includes(term);
+      });
+      
+      displayEvents(filtered);
+    }
+    
+    function editEvent(eventId) {
+      if (!isOwner) {
+        showAlert('Only owner can edit events', 'error');
+        return;
+      }
+  
+      const event = allEvents.find(e => e.id === eventId);
+      if (!event) return;
+  
+      document.getElementById('eventId').value = event.id;
+      document.getElementById('eventEvents').value = event.events;
+      document.getElementById('eventDescription').value = event.description;
+      document.getElementById('eventPicture').value = event.pictureUrl;
+  
+      // Show current picture if exists
+      const currentPictureSection = document.getElementById('currentPictureSection');
+      const currentPicture = document.getElementById('currentPicture');
+  
+      if (event.pictureUrl && event.pictureUrl.trim() !== '') {
+        currentPicture.src = event.pictureUrl;
+        currentPictureSection.style.display = 'block';
+      } else {
+        currentPictureSection.style.display = 'none';
+      }
+  
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    function deletePicture() {
+      if (!confirm('Are you sure you want to delete this picture?')) {
+        return;
+      }
+  
+      const currentUrl = document.getElementById('eventPicture').value;
+  
+      if (currentUrl && currentUrl.trim() !== '') {
+        // Delete from Drive if it's a Drive image
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result.success) {
+                document.getElementById('eventPicture').value = '';
+                document.getElementById('currentPictureSection').style.display = 'none';
+                document.getElementById('previewImage').style.display = 'none';
+                showAlert('Picture deleted successfully!', 'success');
+              } else {
+                showAlert('Error deleting: ' + result.error, 'error');
+              }
+            })
+            .withFailureHandler(function(error) {
+              showAlert('Delete error: ' + error, 'error');
+            })
+            .deleteImageFromDrive(currentUrl);
+        } else {
+          postToScript({ action: 'deleteImageFromDrive', imageUrl: currentUrl })
+            .then(result => {
+              if (result.success) {
+                document.getElementById('eventPicture').value = '';
+                document.getElementById('currentPictureSection').style.display = 'none';
+                document.getElementById('previewImage').style.display = 'none';
+                showAlert('Picture deleted successfully!', 'success');
+              } else {
+                showAlert('Error deleting: ' + (result.error || result.message), 'error');
+              }
+            })
+            .catch(err => showAlert('Delete error: ' + err, 'error'));
+        }
+      } else {
+        showAlert('No picture to delete', 'error');
+      }
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+  
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        showAlert('Please select an image file', 'error');
+        return;
+      }
+  
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Compress image if needed
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+      
+          // Calculate new dimensions (max 1200px width)
+          const maxWidth = 1200;
+          const maxHeight = 1200;
+      
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = (height / width) * maxWidth;
+              width = maxWidth;
+            } else {
+              width = (width / height) * maxHeight;
+              height = maxHeight;
+            }
+          }
+      
+          canvas.width = width;
+          canvas.height = height;
+      
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+      
+          // Compress to JPEG with quality 0.7
+          let compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      
+          // Check size and compress more if needed
+          let quality = 0.7;
+          while (compressedDataUrl.length > 2 * 1024 * 1024 && quality > 0.1) {
+            quality -= 0.1;
+            compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+      
+          // Show preview
+          const preview = document.getElementById('previewImage');
+          preview.src = compressedDataUrl;
+          preview.style.display = 'block';
+      
+          // Store compressed data
+          document.getElementById('eventPicture').value = compressedDataUrl;
+      
+          const sizeKB = Math.round(compressedDataUrl.length / 1024);
+          showAlert(`Image compressed to ${sizeKB}KB and ready to upload`, 'success');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function saveEvent(e) {
+      e.preventDefault();
+  
+      if (!isOwner) {
+        showAlert('Only owner can save events', 'error');
+        return;
+      }
+  
+      const eventId = document.getElementById('eventId').value;
+      const event = allEvents.find(ev => ev.id == eventId);
+  
+      if (!event) {
+        showAlert('Event not found', 'error');
+        return;
+      }
+  
+      const saveBtn = e.target.querySelector('button[type="submit"]');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+  
+      const pictureValue = document.getElementById('eventPicture').value.trim();
+  
+      // Check if it's a data URL (uploaded file) or regular URL
+      if (pictureValue.startsWith('data:image')) {
+        // Upload to Drive first
+        showAlert('Uploading image to Google Drive...', 'success');
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function(uploadResult) {
+              if (uploadResult.success) {
+                // Now update event with Drive URL
+                updateEventWithData(eventId, event, uploadResult.imageUrl, saveBtn);
+              } else {
+                showAlert('Image upload failed: ' + uploadResult.error, 'error');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+              }
+            })
+            .withFailureHandler(function(error) {
+              showAlert('Image upload error: ' + error, 'error');
+              saveBtn.disabled = false;
+              saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            })
+            .uploadImageToDrive(pictureValue, 'event_image.jpg', eventId);
+        } else {
+          // POST to REST API
+          postToScript({ action: 'uploadImageToDrive', imageData: pictureValue, fileName: 'event_image.jpg', eventId: eventId })
+            .then(uploadResult => {
+              if (uploadResult.success) {
+                updateEventWithData(eventId, event, uploadResult.imageUrl, saveBtn);
+              } else {
+                showAlert('Image upload failed: ' + (uploadResult.error || uploadResult.message), 'error');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+              }
+            })
+            .catch(err => {
+              showAlert('Image upload error: ' + err, 'error');
+              saveBtn.disabled = false;
+              saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            });
+        }
+      } else {
+        // Direct URL or empty - save directly
+        updateEventWithData(eventId, event, pictureValue, saveBtn);
+      }
+    }
+
+function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
+  const eventData = {
+    eventName: event.eventName,
+    events: document.getElementById('eventEvents').value,
+    date: event.date,
+    time: event.time,
+    location: event.location,
+    description: document.getElementById('eventDescription').value,
+    attendeeList: event.attendeeList,
+    pictureUrl: pictureUrl
+  };
+  
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          showAlert(result.message, 'success');
+          closeModal();
+          loadEvents();
+        } else {
+          showAlert(result.message, 'error');
+        }
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+      })
+      .withFailureHandler(function(error) {
+        showAlert('Error: ' + error, 'error');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+      })
+      .updateEvent(eventId, eventData);
+    return;
+  }
+
+  // Fallback: POST updateEvent
+  const idToken = localStorage.getItem('googleToken') || '';
+  postToScript({ action: 'updateEvent', eventId: eventId, eventData: eventData, id_token: idToken })
+    .then(result => {
+      if (result.success) {
+        showAlert(result.message || 'Saved', 'success');
+        closeModal();
+        loadEvents();
+      } else {
+        showAlert(result.message || result.error || 'Update failed', 'error');
+      }
+    })
+    .catch(err => showAlert('Error: ' + err, 'error'))
+    .finally(() => {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+    });
+}
+    
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+      document.getElementById('editForm').reset();
+    }
+    
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        const parts = dateStr.split('-');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${parts[2]} - ${months[parseInt(parts[1]) - 1]} - ${parts[0]}`;
+        } catch (e) {
+        return dateStr;
+        }
+    }
+
+    // ==================== EVENT HANDLERS ====================
+    function handleEventsSuccess(events) {
+      log('Events loaded successfully', { count: events.length });
+      
+      allEvents = events || [];
+      showLoading(false);
+      updateMonthDisplay();
+      document.getElementById('eventsGrid').style.display = 'grid';
+    }
+    
+    function handleEventsError(error) {
+      log('Error loading events', error);
+      
+      showLoading(false);
+      showError(`Failed to load events: ${error.message || error}`);
+      
+      // Try demo data as fallback
+      log('Loading demo data as fallback');
+      allEvents = getDemoEvents();
+      updateMonthDisplay();
+      document.getElementById('eventsGrid').style.display = 'grid';
+    }
+    
+    // ==================== DEMO DATA ====================
+    function getDemoEvents() {
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      return [
+        {
+          id: 'demo1',
+          eventName: 'Sample Event 1',
+          events: 'This is a demo event for testing',
+          date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`,
+          time: '10:00 AM',
+          location: 'Chennai',
+          description: 'Demo event description',
+          attendeeList: 'Nandha, Team',
+          pictureUrl: '',
+          fileIds: ''
+        },
+        {
+          id: 'demo2',
+          eventName: 'Sample Event 2',
+          events: 'Another demo event',
+          date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-20`,
+          time: '2:00 PM',
+          location: 'Tiruppur',
+          description: 'Another demo description',
+          attendeeList: 'Nandha',
+          pictureUrl: '',
+          fileIds: ''
+        }
+      ];
+    }
+    
+    // ==================== UI FUNCTIONS ====================
+    function showLoading(show) {
+      document.getElementById('loadingSection').style.display = show ? 'block' : 'none';
+    }
+    
+    function showError(message) {
+      const errorSection = document.getElementById('errorSection');
+      errorSection.innerHTML = `
+        <div class="error-message">
+          <i class="fas fa-exclamation-triangle"></i><br>
+          ${message}<br><br>
+          <button class="btn btn-primary" onclick="loadEvents()">
+            <i class="fas fa-sync"></i> Retry
+          </button>
+        </div>
+      `;
+      errorSection.style.display = 'block';
+    }
+    
+    function hideError() {
+      document.getElementById('errorSection').style.display = 'none';
+    } 
+
+
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
+      alertBox.style.display = 'block';
+  
+      setTimeout(() => {
+        alertBox.style.display = 'none';
+      }, 5000);
+  
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==================== NAVIGATION ====================
+    function goToCalendar() {
+      window.location.href = '/calendar.html';
+    }
+    
+    function goToAdmin() {
+      window.location.href = '/admin.html';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('editModal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    window.addEventListener('resize', function() {
+      displayEvents(currentMonthEvents);
+    });
+
+    // ==================== START APP ====================
+    window.addEventListener('load', initApp);
+  </script>
+</body>
+</html>
