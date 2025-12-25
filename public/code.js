@@ -1,6 +1,7 @@
 // ==================== CONFIGURATION ====================
 const SHEET_NAME = 'Sheet1';
 const ADMIN_SHEET_NAME = 'Admins';
+const ARCHIVE_SHEET_NAME = 'Archive';
 const FALLBACK_ADMIN = 'hn6160324@gmail.com';
 
 // ==================== CORS CONFIGURATION ====================
@@ -10,6 +11,13 @@ function doGet(e) {
   const email = e.parameter.email;
 
   Logger.log('doGet called with params:', JSON.stringify(e.parameter));
+
+  // Auto-archive old events on 1st of month
+  try {
+    archiveOldEvents();
+  } catch (archiveErr) {
+    Logger.log('Archive error (non-critical):', archiveErr);
+  }
 
   // Handle API requests from Netlify
   if (action === 'checkAdmin' && email) {
@@ -198,6 +206,132 @@ function initializeSheet() {
   }
   
   return sheet;
+}
+
+// ==================== ARCHIVE SHEET INITIALIZATION ====================
+function initializeArchiveSheet() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let archiveSheet = spreadsheet.getSheetByName(ARCHIVE_SHEET_NAME);
+  
+  if (!archiveSheet) {
+    archiveSheet = spreadsheet.insertSheet(ARCHIVE_SHEET_NAME);
+    Logger.log('✅ Created Archive sheet');
+  }
+  
+  const firstRow = archiveSheet.getRange(1, 1, 1, 9).getValues()[0];
+  if (!firstRow[0] || firstRow[0] !== 'Event Name') {
+    archiveSheet.getRange(1, 1, 1, 9).setValues([[
+      'Event Name', 'Events', 'Date', 'Time', 'Location', 'Description', 'Attendee List', 'Picture URL', 'File IDs'
+    ]]);
+    archiveSheet.getRange(1, 1, 1, 9)
+      .setFontWeight('bold')
+      .setBackground('#6c757d')
+      .setFontColor('#ffffff');
+    archiveSheet.setFrozenRows(1);
+    Logger.log('✅ Archive sheet headers initialized');
+  }
+  
+  return archiveSheet;
+}
+
+// ==================== ARCHIVE OLD EVENTS (Auto-run on 1st of month) ====================
+function archiveOldEvents() {
+  try {
+    const now = new Date();
+    const today = now.getDate();
+    
+    Logger.log('Archive check: Today is ' + today);
+    
+    // Only run on 1st of month
+    if (today !== 1) {
+      Logger.log('Not 1st of month, skipping archive');
+      return { success: false, message: 'Archive runs only on 1st of month' };
+    }
+    
+    // Get current month, previous month, and month to archive (2+ months old)
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    
+    // Month to archive (2 months ago)
+    const archiveMonth = currentMonth <= 1 ? currentMonth + 10 : currentMonth - 2;
+    const archiveYear = currentMonth <= 1 ? currentYear - 1 : currentYear;
+    
+    Logger.log('Current month: ' + currentMonth + '/' + currentYear);
+    Logger.log('Previous month: ' + previousMonth + '/' + previousYear);
+    Logger.log('Archive month (2+ months old): ' + archiveMonth + '/' + archiveYear);
+    
+    const sheet = initializeSheet();
+    const archiveSheet = initializeArchiveSheet();
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) {
+      Logger.log('No events to archive');
+      return { success: true, message: 'No events to archive' };
+    }
+    
+    const data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
+    const rowsToDelete = [];
+    let archivedCount = 0;
+    
+    // Find events that are 2+ months old (older than previous month)
+    for (let i = 0; i < data.length; i++) {
+      const eventDate = data[i][2]; // Column 3 is Date
+      
+      if (!eventDate || eventDate.toString().trim() === '') {
+        continue;
+      }
+      
+      try {
+        const dateObj = new Date(eventDate + 'T00:00:00');
+        const eventMonth = dateObj.getMonth();
+        const eventYear = dateObj.getFullYear();
+        
+        // Check if event is older than previous month
+        // Keep: current month and previous month
+        // Archive: 2+ months old events
+        const isCurrentMonth = (eventMonth === currentMonth && eventYear === currentYear);
+        const isPreviousMonth = (eventMonth === previousMonth && eventYear === previousYear);
+        
+        if (!isCurrentMonth && !isPreviousMonth) {
+          // Event is 2+ months old, archive it
+          archiveSheet.appendRow(data[i]);
+          Logger.log('✅ Archived event: ' + data[i][0] + ' from ' + eventDate);
+          
+          // Mark row for deletion (2 because data starts at row 2)
+          rowsToDelete.push(i + 2);
+          archivedCount++;
+        }
+      } catch (e) {
+        Logger.log('Error processing date for row ' + (i + 2) + ': ' + e);
+      }
+    }
+    
+    // Delete rows in reverse order (to avoid index shifting)
+    for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+      sheet.deleteRow(rowsToDelete[i]);
+      Logger.log('🗑️ Deleted row: ' + rowsToDelete[i]);
+    }
+    
+    Logger.log('✅ Archive complete: ' + archivedCount + ' events moved');
+    return { 
+      success: true, 
+      message: 'Archived ' + archivedCount + ' old events. Keeping current + previous month events.',
+      archivedCount: archivedCount,
+      keptMonths: 'Current (' + getMonthName(currentMonth) + ') + Previous (' + getMonthName(previousMonth) + ')'
+    };
+  } catch (error) {
+    Logger.log('❌ Error archiving events: ' + error.toString());
+    return { success: false, message: 'Archive error: ' + error.toString() };
+  }
+}
+
+// Helper function to get month name
+function getMonthName(monthIndex) {
+  const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+  return months[monthIndex];
 }
 
 
@@ -989,6 +1123,13 @@ function verifyIdToken(idToken) {
 // ==================== REST POST HANDLER ====================
 function doPost(e) {
   try {
+    // Auto-archive old events on 1st of month
+    try {
+      archiveOldEvents();
+    } catch (archiveErr) {
+      Logger.log('Archive error (non-critical):', archiveErr);
+    }
+
     // Handle preflight if needed
     if (e === undefined) {
       return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No payload' }))

@@ -86,12 +86,12 @@
       filter: drop-shadow(0 0 15px rgba(255, 170, 60, 0.6))
               drop-shadow(0 0 30px rgba(255, 120, 0, 0.4));
       /* font-size: 36px; */
-      animation: pulse 2s ease-in-out infinite;
+      animation: pulse 3s ease-in-out infinite;
     }
     
     @keyframes pulse {
       0%, 100% { transform: scale(1.05); }
-      50% { transform: scale(1.3); }
+      50% { transform: scale(1.4); }
     }
     
     h1 {
@@ -186,6 +186,44 @@
       transform: translateY(0);
     }
 
+    /* Custom Google Sign-In Button Styling */
+    #g_id_button_container {
+      width: 100%;
+    }
+
+    #g_id_button_container > div {
+      width: 100%;
+    }
+
+    #g_id_button_container > div > div {
+      width: 100% !important;
+    }
+
+    #g_id_button_container button {
+      width: 100% !important;
+      padding: 16px 14px !important;
+      border-radius: 12px !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      height: auto !important;
+      background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
+      color: #333 !important;
+      border: 2px solid #e0e0e0 !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+      transition: all 0.3s ease !important;
+      cursor: pointer !important;
+    }
+
+    #g_id_button_container button:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+      border-color: #667eea !important;
+    }
+
+    #g_id_button_container button:active {
+      transform: translateY(0) !important;
+    }
+
     .letter {
       text-align: center;
       margin: 10px 0;
@@ -265,10 +303,12 @@
       padding: 10px;
       }
     .login-card {
-      padding: 32px 24px;
-      margin-top: -70px;
+      padding: 30px 15px;
     }
+    .mob-hide {
+      display: none;
     }
+  }
   </style>
 </head>
 <body>
@@ -291,7 +331,7 @@
           <div class="feature-icon">📅</div>
           <span>Manage events effortlessly</span>
         </div>
-        <div class="feature">
+        <div class="feature mob-hide">
           <div class="feature-icon">🔒</div>
           <span>Secure access control</span>
         </div>
@@ -302,7 +342,7 @@
       </div>
 
       <!-- Google Sign-In Button Container -->
-      <div id="g_id_button_container" style="margin-top:8px;"></div>
+      <div id="g_id_button_container" style="display: flex; justify-content: center; margin-top: 16px; margin-bottom: 16px;"></div>
 
       <div class="letter" style="color: white;"><h4>OR</h4></div>
       
@@ -331,7 +371,7 @@
 
   <script>
     // Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD4I7-_YjxQG1WoQvo-2sVH6PWwLnFv7BDwysNGvybV_BHG9lKXBT9nePMLTGUOe_M/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJU-H9bBzrLWAmHAWd_t5cj8kKVLQxZlxK8rHAmjfanpQOkHOlojAAPklutXVN29M-/exec';
 
     // Google Identity state
     let isGoogleInitialized = false;
