@@ -2,8 +2,24 @@
 <html>
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#667eea">
+  
+  <!-- TIER 1: OWNER OVERRIDE ONLY -->
+  <script>
+    window.addEventListener('load', function() {
+      const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
+      const userEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+      const ADMIN_OVERRIDES_LOWER = ADMIN_OVERRIDE_EMAILS.map(e => (e || '').toLowerCase());
+      const isOwnerOverride = ADMIN_OVERRIDES_LOWER.indexOf(userEmail) !== -1;
+      
+      if (!isOwnerOverride) {
+        document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: Arial;"><h1>❌ Access Denied</h1><p>Only owners can access the admin panel.</p><p><a href="/calendar.html">Back to Calendar</a></p></div>';
+        setTimeout(() => { window.location.href = '/calendar.html'; }, 2000);
+      }
+    });
+  </script>
   
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="/manifest.json">
@@ -272,6 +288,10 @@
       .action-buttons {
         flex-direction: column;
       }
+
+      #logoutBtn {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -283,6 +303,7 @@
         <button class="btn btn-primary" onclick="openEventsGallery()">📸 Events Gallery</button>
         <button class="btn btn-primary" onclick="openCalendar()">📅 View Calendar</button>
         <button class="btn btn-success" onclick="openAddModal()">➕ Add Event</button>
+        <button class="btn btn-secondary" id="logoutBtn" style="margin-left:8px;" onclick="logoutUser()">Logout</button>
       </div>
     </div>
 
@@ -374,7 +395,7 @@
 
   <script>
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD4I7-_YjxQG1WoQvo-2sVH6PWwLnFv7BDwysNGvybV_BHG9lKXBT9nePMLTGUOe_M/exec';
 
     // Admin Authentication Check
     window.addEventListener('load', function() {
@@ -405,36 +426,42 @@
 
     function initApp() {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(url) {
-            webAppUrl = url;
-            loadEvents();
-          })
-          .getWebAppUrl();
-      } else if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
-        webAppUrl = SCRIPT_URL;
-        loadEvents();
-      } else {
-        // No backend configured - show message and keep demo data
-        document.getElementById('loading').innerText = 'No backend configured.';
-      }
+          google.script.run
+            .withSuccessHandler(function(url) {
+              webAppUrl = url;
+              loadEvents();
+            })
+            .getWebAppUrl();
+        } else if (SCRIPT_URL && typeof SCRIPT_URL === 'string' && SCRIPT_URL.trim() !== '') {
+          // Accept any non-empty SCRIPT_URL as a valid backend URL
+          webAppUrl = SCRIPT_URL;
+          loadEvents();
+        } else {
+          // No backend configured - show message and keep demo data
+          document.getElementById('loading').innerText = 'No backend configured.';
+        }
     }
 
     // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
-      const body = Object.assign({}, payload, { id_token: idToken });
+      const userEmail = localStorage.getItem('userEmail') || '';
+      const body = Object.assign({}, payload, { id_token: idToken, userEmail: userEmail });
       const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
       const params = new URLSearchParams();
       for (const k in body) {
         if (body[k] === undefined || body[k] === null) continue;
         params.append(k, typeof body[k] === 'object' ? JSON.stringify(body[k]) : body[k]);
       }
+      console.log('Admin postToScript:', { action: payload.action, userEmail: userEmail, url: url });
       return fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params.toString()
-      }).then(r => r.json());
+      }).then(r => {
+        if (!r.ok) console.error('postToScript HTTP error:', r.status);
+        return r.json();
+      });
     }
 
     function loadEvents() {
@@ -453,25 +480,43 @@
         return;
       }
 
-      // Fallback to fetch API
+      // Fallback to fetch API (REST endpoint)
       const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
+      if (SCRIPT_URL) {
+        console.log('Admin: Fetching events from', SCRIPT_URL);
         fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
-          .then(r => r.json())
+          .then(r => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            return r.json();
+          })
           .then(data => {
+            console.log('Admin: Events response', data);
             if (data && data.success && data.events) {
               allEvents = data.events;
               displayEvents(allEvents);
               document.getElementById('loading').style.display = 'none';
               document.getElementById('eventsTable').style.display = 'block';
+            } else if (data && Array.isArray(data)) {
+              allEvents = data;
+              displayEvents(allEvents);
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('eventsTable').style.display = 'block';
+            } else if (data && data.events && Array.isArray(data.events)) {
+              allEvents = data.events;
+              displayEvents(allEvents);
+              document.getElementById('loading').style.display = 'none';
+              document.getElementById('eventsTable').style.display = 'block';
             } else {
-              document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Failed to load events</div>';
+              document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">No events found or invalid response format</div>';
+              console.warn('Unexpected data format:', data);
             }
           })
           .catch(err => {
-            document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Error loading events: ' + err + '</div>';
+            console.error('Admin: Error loading events:', err);
+            document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Error loading events: ' + err.message + '</div>';
           });
       } else {
+        console.warn('Admin: No SCRIPT_URL configured');
         document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">No backend configured</div>';
       }
     }
@@ -592,51 +637,71 @@
         pictureUrl: document.getElementById('eventPicture').value
       };
 
+      console.log('Admin saveEvent:', { eventId, eventData });
+      
       const saveBtn = e.target.querySelector('button[type="submit"]');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving...';
 
       // If google.script.run is available (Apps Script hosting), use it.
       if (typeof google !== 'undefined' && google.script && google.script.run) {
-        const runFn = eventId ? google.script.run.withSuccessHandler(function(result) {
-          if (result.success) {
-            showAlert(result.message, 'success');
-            closeModal();
-            loadEvents();
-          } else {
-            showAlert(result.message, 'error');
-          }
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Save Event';
-        }).withFailureHandler(function(error) {
-          showAlert('Error: ' + error, 'error');
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Save Event';
-        }) : google.script.run.withSuccessHandler(function(result) {
-          if (result.success) {
-            showAlert(result.message, 'success');
-            closeModal();
-            loadEvents();
-          } else {
-            showAlert(result.message, 'error');
-          }
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Save Event';
-        }).withFailureHandler(function(error) {
-          showAlert('Error: ' + error, 'error');
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Save Event';
-        });
-
-        if (eventId) runFn.updateEvent(eventId, eventData); else runFn.addEvent(eventData);
+        console.log('Using google.script.run path');
+        
+        if (eventId) {
+          // Update event
+          google.script.run
+            .withSuccessHandler(function(result) {
+              console.log('Update success:', result);
+              if (result.success) {
+                showAlert(result.message, 'success');
+                closeModal();
+                loadEvents();
+              } else {
+                showAlert(result.message, 'error');
+              }
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Event';
+            })
+            .withFailureHandler(function(error) {
+              console.error('Update error:', error);
+              showAlert('Error: ' + error, 'error');
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Event';
+            })
+            .updateEvent(eventId, eventData);
+        } else {
+          // Add event
+          google.script.run
+            .withSuccessHandler(function(result) {
+              console.log('Add success:', result);
+              if (result.success) {
+                showAlert(result.message, 'success');
+                closeModal();
+                loadEvents();
+              } else {
+                showAlert(result.message, 'error');
+              }
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Event';
+            })
+            .withFailureHandler(function(error) {
+              console.error('Add error:', error);
+              showAlert('Error: ' + error, 'error');
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Event';
+            })
+            .addEvent(eventData);
+        }
         return;
       }
 
       // Fallback for static hosting: use postToScript helper (form-encoded)
+      console.log('Using postToScript fallback path');
       const payload = { action: eventId ? 'updateEvent' : 'addEvent', eventData: eventData };
       if (eventId) payload.eventId = eventId;
       postToScript(payload)
         .then(result => {
+          console.log('postToScript result:', result);
           if (result && result.success) {
             showAlert(result.message || 'Saved', 'success');
             closeModal();
@@ -645,7 +710,10 @@
             showAlert(result && (result.message || result.error) ? (result.message || result.error) : 'Save failed', 'error');
           }
         })
-        .catch(err => showAlert('Error: ' + err, 'error'))
+        .catch(err => {
+          console.error('postToScript error:', err);
+          showAlert('Error: ' + err, 'error');
+        })
         .finally(() => {
           saveBtn.disabled = false;
           saveBtn.textContent = 'Save Event';
@@ -724,8 +792,25 @@
         closeModal();
       }
     }
-
     // Initialize app (called after admin verification inside load handler)
+
+    function logoutUser() {
+      try {
+        const token = localStorage.getItem('googleToken');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('googleToken');
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('oneTapShown');
+        if (window.google && google.accounts && google.accounts.id && typeof google.accounts.id.disableAutoSelect === 'function') {
+          try { google.accounts.id.disableAutoSelect(); } catch (e) { console.warn('disableAutoSelect failed', e); }
+        }
+        if (token && token !== 'manual') {
+          try { fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(token), { method: 'POST', mode: 'no-cors' }); } catch (e) { }
+        }
+        setTimeout(() => { window.location.href = '/'; }, 150);
+      } catch (e) { window.location.href = '/'; }
+    }
   </script>
 </body>
 </html>

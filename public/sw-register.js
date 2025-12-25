@@ -17,6 +17,7 @@ if ('serviceWorker' in navigator) {
 
 // PWA Install Prompt Handler
 let deferredPrompt;
+let installBtnListenerAdded = false;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('PWA Install prompt available');
@@ -25,8 +26,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
   
   // Show custom install button
   const installBtn = document.getElementById('installBtn');
-  if (installBtn) {
+  if (installBtn && !installBtnListenerAdded) {
     installBtn.style.display = 'block';
+    installBtnListenerAdded = true;
     
     installBtn.addEventListener('click', async () => {
       if (deferredPrompt) {

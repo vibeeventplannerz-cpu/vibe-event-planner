@@ -2,6 +2,7 @@
 <html>
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="Event Calendar - Manage your events">
   <meta name="theme-color" content="#667eea">
@@ -28,7 +29,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #5a74e6 20%, #764ba2 80%);
       min-height: 100vh;
       padding: 20px;
     }
@@ -80,6 +81,22 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
+
+    .btn-logout {
+      background: white;
+      color: #e74c3c;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.12);
+      margin-left: 10px;
+    }
+
+    .btn-logout:hover { transform: translateY(-2px); }
 
     .calendar-card {
       background: white;
@@ -404,6 +421,24 @@
       margin-top: 15px;
     }
 
+    .uploaded-thumbs {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .uploaded-thumb {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+
     .file-item {
       background: #f8f9fa;
       padding: 12px 16px;
@@ -562,6 +597,11 @@
       transform: rotate(90deg);
     }
 
+    .dummy {
+      width: 200px;
+      height: 50px;
+    }
+
 
 
 
@@ -625,6 +665,14 @@
         background-color: #fff;
         color: #667eea;
       }
+
+      .logout-pc {
+        display: none;
+      }
+
+      .dummy {
+        display: none;
+      }
     }
 
     @media (min-width: 768px){
@@ -635,8 +683,16 @@
     }
     .btn-admin {
         display: none;
-    }
-    }
+      }
+
+    .logout-mob {
+      display: none;
+      }
+
+      .dummy {
+        visibility: hidden;
+      }
+  }
 
 
     @media (hover: none) {
@@ -675,8 +731,13 @@
         <h4>Dear Team Members 👬🏻</h4>
         <p>Behind the beauty of every event, your hard work and dedication are on another level🔥. Thanks for being the backbone of Vibe Event Planner'Z!💖</p>
       </div>
+      <button class="dummy">Dummy Button</button>
       <button id="adminBtn" class="btn-admin" onclick="openAdmin()">🔧 Admin Panel</button>
-      <button id="eventsBtn" class="btn-admin" style="display:none; margin-left:10px;" onclick="goToEvents()">📸 Events</button>
+      <div>
+        <button id="eventsBtn" class="btn-admin" style="display:none; margin-left:10px;" onclick="goToEvents()">📸 Events </button>
+        <button id="logoutBtn" class="btn-logout logout-mob" onclick="logoutUser()">⬅️ Logout</button>
+      </div>
+      <button id="logoutBtn" class="btn-logout logout-pc" onclick="logoutUser()">⬅️ Logout</button>
     </div>
 
     <!-- ADD THIS ALERT BOX -->
@@ -737,7 +798,7 @@
   <script src="/sw-register.js"></script>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD4I7-_YjxQG1WoQvo-2sVH6PWwLnFv7BDwysNGvybV_BHG9lKXBT9nePMLTGUOe_M/exec';
     // prefer webAppUrl when available (set by Google-hosted pages)
     let webAppUrl = SCRIPT_URL;
     // Explicit admin override list (only these emails see admin UI, upload/delete, and Events button)
@@ -769,57 +830,58 @@
       const adminBtn = document.getElementById('adminBtn');
       const evBtn = document.getElementById('eventsBtn');
 
-      // Owner override check (owner gets Admin Panel + Events + upload/delete)
-      const isOwnerOverride = ADMIN_OVERRIDE_EMAILS.indexOf(emailLower) !== -1;
+      // Normalize override list for case-insensitive compare
+      const ADMIN_OVERRIDES_LOWER = ADMIN_OVERRIDE_EMAILS.map(e => (e || '').toLowerCase());
+
+      // TIER 1: Owner override check (owner gets Admin Panel + Events + upload/delete + ALL access)
+      const isOwnerOverride = ADMIN_OVERRIDES_LOWER.indexOf(emailLower) !== -1;
       if (isOwnerOverride) {
         isOwner = true;
-        // Ensure admin.html can rely on this flag if it checks localStorage
-        localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('isOwnerOverride', 'true');
+        localStorage.setItem('isSheetAdmin', 'false');
+        // Show BOTH Admin Panel button AND Events button for owners
         if (adminBtn) adminBtn.style.display = 'block';
         if (evBtn) evBtn.style.display = 'inline-block';
-        // Load events after role set
         loadEventsWithAuth(email);
         return;
       }
 
-      // Not an owner override — ask server whether this email is listed in Admins sheet
-      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec' && email) {
+      // TIER 2: Check Admins sheet (limited access - Events button ONLY)
+      if (SCRIPT_URL && email) {
         fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(email)}`)
           .then(r => r.json())
           .then(data => {
             const isSheetAdmin = !!(data && data.isAdmin);
-            // Sheet admins see only the Events button (not Admin Panel)
             isOwner = false;
-            localStorage.setItem('isAdmin', isSheetAdmin ? 'false' : 'false');
+            localStorage.setItem('isOwnerOverride', 'false');
+            localStorage.setItem('isSheetAdmin', isSheetAdmin ? 'true' : 'false');
+            
             if (isSheetAdmin) {
+              // Sheet admin: show Events button ONLY, hide Admin Panel
               if (adminBtn) adminBtn.style.display = 'none';
               if (evBtn) evBtn.style.display = 'inline-block';
             } else {
+              // Regular user: hide both
               if (adminBtn) adminBtn.style.display = 'none';
               if (evBtn) evBtn.style.display = 'none';
             }
-            // Load events after role resolved
             loadEventsWithAuth(email);
           })
           .catch(err => {
-            console.error('Owner check fetch failed:', err);
-            // On error, hide admin controls
+            console.error('Admin check failed:', err);
             isOwner = false;
+            localStorage.setItem('isOwnerOverride', 'false');
+            localStorage.setItem('isSheetAdmin', 'false');
             if (adminBtn) adminBtn.style.display = 'none';
             if (evBtn) evBtn.style.display = 'none';
             loadEventsWithAuth(email);
           });
       } else {
-        // No server configured — fallback to local stored flag (conservative)
-        const isAdminStored = localStorage.getItem('isAdmin') === 'true';
-        isOwner = !!isAdminStored;
-        if (isOwner) {
-          if (adminBtn) adminBtn.style.display = 'block';
-          if (evBtn) evBtn.style.display = 'inline-block';
-        } else {
-          if (adminBtn) adminBtn.style.display = 'none';
-          if (evBtn) evBtn.style.display = 'none';
-        }
+        isOwner = false;
+        localStorage.setItem('isOwnerOverride', 'false');
+        localStorage.setItem('isSheetAdmin', 'false');
+        if (adminBtn) adminBtn.style.display = 'none';
+        if (evBtn) evBtn.style.display = 'none';
         loadEventsWithAuth(email);
       }
     }
@@ -827,7 +889,8 @@
     // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
-      const body = Object.assign({}, payload, { id_token: idToken });
+      const userEmail = localStorage.getItem('userEmail') || '';
+      const body = Object.assign({}, payload, { id_token: idToken, userEmail: userEmail });
       const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
       const params = new URLSearchParams();
       for (const k in body) {
@@ -838,7 +901,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params.toString()
-      }).then(r => r.json());
+      }).then(r => {
+        if (!r.ok) console.error('postToScript HTTP error:', r.status);
+        return r.json();
+      });
     }
     
     let currentDate = new Date();
@@ -868,12 +934,14 @@
         return;
       }
 
-      // Fallback via SCRIPT_URL
+      // Fallback via SCRIPT_URL (REST endpoint)
       const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec' && userEmail) {
+      if (SCRIPT_URL && userEmail) {
+        console.log('Checking admin status from:', SCRIPT_URL);
         fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(userEmail)}`)
           .then(r => r.json())
           .then(data => {
+            console.log('Admin check response:', data);
             isOwner = !!(data && data.isAdmin);
             if (isOwner) {
               document.getElementById('adminBtn').style.display = 'block';
@@ -884,8 +952,7 @@
             }
           })
           .catch(err => {
-            console.error('Owner check fetch failed:', err);
-            isOwner = false;
+            console.error('Admin check error:', err);
             document.getElementById('adminBtn').style.display = 'none';
           });
       }
@@ -917,22 +984,36 @@
         return;
       }
 
-      // Fallback to fetch-based API
-      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
+      // Fallback to fetch-based API (REST endpoint at SCRIPT_URL)
+      if (SCRIPT_URL) {
+        console.log('Loading events from API:', SCRIPT_URL);
         fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(email)}`)
           .then(r => r.json())
           .then(data => {
+            console.log('Events response:', data);
             if (data && data.success && data.events) {
+              allEvents = data.events;
+              document.getElementById('loading').style.display = 'none';
+              renderCalendar();
+            } else if (data && data.events && Array.isArray(data.events)) {
               allEvents = data.events;
               document.getElementById('loading').style.display = 'none';
               renderCalendar();
             } else {
               console.error('Failed to load events via fetch', data);
+              allEvents = [];
+              document.getElementById('loading').style.display = 'none';
+              renderCalendar();
             }
           })
-          .catch(err => console.error('Fetch error loading events:', err));
+          .catch(err => {
+            console.error('Fetch error loading events:', err);
+            allEvents = [];
+            document.getElementById('loading').style.display = 'none';
+            renderCalendar();
+          });
       } else {
-        // No backend configured — use demo data
+        console.warn('No SCRIPT_URL configured');
         allEvents = [];
         document.getElementById('loading').style.display = 'none';
         renderCalendar();
@@ -1187,6 +1268,13 @@
   return `
     <div class="detail-section">
       <div class="detail-label">📁 Uploaded Files</div>
+      <div class="uploaded-thumbs">
+        ${ids.map((id, i) => {
+          const trimmedId = id.trim();
+          const viewUrl = `https://drive.google.com/uc?export=view&id=${trimmedId}`;
+          return `<img src="${viewUrl}" class="uploaded-thumb" onclick="window.open('https://drive.google.com/file/d/${trimmedId}/view','_blank')" onerror="this.style.display='none'" title="File ${i+1}" />`;
+        }).join('')}
+      </div>
       <div class="file-list">
         ${ids.map((id, i) => {
           const trimmedId = id.trim();
@@ -1395,7 +1483,8 @@ function uploadComplete(safeId, btn, input, msg) {
   
   setTimeout(() => {
     msg.innerHTML = '';
-    loadEvents();
+    const userEmail = localStorage.getItem('userEmail') || '';
+    loadEventsWithAuth(userEmail);
   }, 1000);
 }
 
@@ -1437,7 +1526,7 @@ function uploadComplete(safeId, btn, input, msg) {
         btn.disabled = false;
         if (result && result.success) {
           showAlert('File deleted successfully!', 'success');
-          setTimeout(() => { loadEvents(); }, 1000);
+          setTimeout(() => { loadEventsWithAuth(email); }, 1000);
         } else {
           const errorMsg = result ? result.message : 'Unknown error';
           showAlert('Delete failed: ' + errorMsg, 'error');
@@ -1461,7 +1550,8 @@ function uploadComplete(safeId, btn, input, msg) {
       btn.disabled = false;
       if (result && result.success) {
         showAlert('File deleted successfully!', 'success');
-        setTimeout(() => { loadEvents(); }, 1000);
+        const userEmail = localStorage.getItem('userEmail') || '';
+        setTimeout(() => { loadEventsWithAuth(userEmail); }, 1000);
       } else {
         showAlert('Delete failed: ' + (result.message || result.error || 'Unknown'), 'error');
       }
@@ -1536,7 +1626,7 @@ function uploadComplete(safeId, btn, input, msg) {
   }
   
   alertBox.className = `alert alert-${type}`;
-  alertBox.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
+  alertBox.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : 'triangle-exclamation'}"></i> ${message}`;
   alertBox.style.display = 'block';
   
   // Auto hide after 5 seconds
@@ -1576,6 +1666,33 @@ function uploadComplete(safeId, btn, input, msg) {
 
 
     // Initialization is handled on window load to ensure authentication runs first
+    function logoutUser() {
+      try {
+        const token = localStorage.getItem('googleToken');
+        // Clear local storage auth flags
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('googleToken');
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('oneTapShown');
+
+        // Disable Google auto-select so One Tap won't auto sign-in next time
+        if (window.google && google.accounts && google.accounts.id && typeof google.accounts.id.disableAutoSelect === 'function') {
+          try { google.accounts.id.disableAutoSelect(); } catch (e) { console.warn('disableAutoSelect failed', e); }
+        }
+
+        // Try to revoke token (best-effort). Use no-cors to avoid CORS issues if token cannot be revoked.
+        if (token && token !== 'manual') {
+          try { fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(token), { method: 'POST', mode: 'no-cors' }); } catch (e) { /* ignore */ }
+        }
+
+        // Redirect to index (login) page
+        setTimeout(() => { window.location.href = '/'; }, 150);
+      } catch (e) {
+        console.error('logout error', e);
+        window.location.href = '/';
+      }
+    }
 
   </script>
 </body>

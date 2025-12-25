@@ -397,13 +397,34 @@ function findEventRow(eventId) {
 
 // ==================== ADD EVENT ====================
 function addEvent(eventData) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can add events');
-  }
+  // Note: Authorization is checked in doPost() before calling this function
+  // But when called via google.script.run directly, we need to check here too
   
   try {
+    // Try to get current user email from session (for google.script.run calls)
+    let sessionEmail = '';
+    try {
+      sessionEmail = Session.getActiveUser && Session.getActiveUser().getEmail ? Session.getActiveUser().getEmail().toLowerCase() : '';
+    } catch (e) {
+      sessionEmail = '';
+    }
+    
+    // If we have a session email, verify it's an admin
+    if (sessionEmail) {
+      const admins = getAdminEmails();
+      const isAdmin = admins.indexOf(sessionEmail) !== -1;
+      Logger.log('addEvent session check: email=' + sessionEmail + ', isAdmin=' + isAdmin);
+      if (!isAdmin) {
+        throw new Error('Access denied: Only admins can add events');
+      }
+    }
+    
+    Logger.log('=== addEvent called ===');
+    Logger.log('eventData: ' + JSON.stringify(eventData));
+    
     const sheet = initializeSheet();
     const lastRow = sheet.getLastRow();
+    Logger.log('Sheet lastRow: ' + lastRow);
     
     let dateToSave = eventData.date;
     if (eventData.date) {
@@ -418,7 +439,8 @@ function addEvent(eventData) {
     }
     
     // Ensure we write all 9 columns (including File IDs column)
-    sheet.getRange(lastRow + 1, 1, 1, 9).setValues([[
+    const newRow = lastRow + 1;
+    const values = [[
       eventData.eventName || '',
       eventData.events || '',
       dateToSave || '',
@@ -428,23 +450,53 @@ function addEvent(eventData) {
       eventData.attendeeList || '',
       eventData.pictureUrl || '',
       '' // fileIds
-    ]]);
+    ]];
+    
+    Logger.log('Writing row ' + newRow + ': ' + JSON.stringify(values[0]));
+    sheet.getRange(newRow, 1, 1, 9).setValues(values);
+    Logger.log('✅ Wrote to sheet, lastRow is now: ' + sheet.getLastRow());
     
     return { success: true, message: 'Event added successfully!' };
   } catch (error) {
-    Logger.log('Error adding event: ' + error.toString());
+    Logger.log('❌ Error adding event: ' + error.toString());
     return { success: false, message: error.toString() };
   }
 }
 
 // ==================== UPDATE EVENT ====================
-function updateEvent(eventId, eventData) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can update events');
-  }
-  
+// Updated to allow sheet-admins (validated via doPost) to update events.
+// `callerEmail` is optionally passed from the REST path (doPost) and contains
+// the resolved email (from ID token or client-side fallback). When the function
+// is invoked directly via HtmlService (google.script.run), Session.getActiveUser()
+// will be used for authorization.
+function updateEvent(eventId, eventData, callerEmail) {
   try {
+    Logger.log('=== updateEvent called ===');
+    Logger.log('eventId: ' + eventId + ', callerEmail: ' + callerEmail);
+    Logger.log('eventData: ' + JSON.stringify(eventData));
+    
+    // Determine if caller is authorized: either the Apps Script session user
+    // is in Admins sheet, or the provided callerEmail (from doPost) is in Admins.
+    let sessionEmail = '';
+    try {
+      sessionEmail = Session.getActiveUser && Session.getActiveUser().getEmail ? Session.getActiveUser().getEmail().toLowerCase() : '';
+    } catch (e) {
+      sessionEmail = '';
+    }
+
+    const admins = getAdminEmails();
+    const isSessionAdmin = sessionEmail ? admins.indexOf(sessionEmail) !== -1 : false;
+    const callerEmailLower = callerEmail ? callerEmail.toString().toLowerCase() : '';
+    const isCallerAdmin = callerEmailLower ? admins.indexOf(callerEmailLower) !== -1 : false;
+
+    Logger.log('Auth: sessionEmail=' + sessionEmail + ', isSessionAdmin=' + isSessionAdmin + ', callerEmail=' + callerEmailLower + ', isCallerAdmin=' + isCallerAdmin);
+    
+    if (!isSessionAdmin && !isCallerAdmin) {
+      throw new Error('Access denied: Only admins can update events');
+    }
+
     const row = findEventRow(eventId);
+    Logger.log('Found event at row: ' + row);
     
     if (!row) {
       throw new Error('Event not found. Please refresh and try again.');
@@ -466,7 +518,7 @@ function updateEvent(eventId, eventData) {
     
     // Preserve existing file IDs (column 9) when updating
     const existingFileIds = sheet.getRange(row, 9).getValue() || '';
-    sheet.getRange(row, 1, 1, 9).setValues([[
+    const values = [[
       eventData.eventName || '',
       eventData.events || '',
       dateToSave || '',
@@ -476,8 +528,10 @@ function updateEvent(eventId, eventData) {
       eventData.attendeeList || '',
       eventData.pictureUrl || '',
       existingFileIds
-    ]]);
+    ]];
     
+    Logger.log('Writing row ' + row + ': ' + JSON.stringify(values[0]));
+    sheet.getRange(row, 1, 1, 9).setValues(values);
     Logger.log('✅ Event updated at row: ' + row);
     return { success: true, message: 'Event updated successfully!' };
   } catch (error) {
@@ -487,12 +541,28 @@ function updateEvent(eventId, eventData) {
 }
 
 // ==================== DELETE EVENT ====================
-function deleteEvent(eventId) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can delete events');
-  }
-  
+// Updated to allow sheet-admins (validated via doPost) to delete events.
+// `callerEmail` is passed from REST path (doPost) and contains the resolved email.
+function deleteEvent(eventId, callerEmail) {
   try {
+    // Determine if caller is authorized: either the Apps Script session user
+    // is in Admins sheet, or the provided callerEmail (from doPost) is in Admins.
+    let sessionEmail = '';
+    try {
+      sessionEmail = Session.getActiveUser && Session.getActiveUser().getEmail ? Session.getActiveUser().getEmail().toLowerCase() : '';
+    } catch (e) {
+      sessionEmail = '';
+    }
+
+    const admins = getAdminEmails();
+    const isSessionAdmin = sessionEmail ? admins.indexOf(sessionEmail) !== -1 : false;
+    const callerEmailLower = callerEmail ? callerEmail.toString().toLowerCase() : '';
+    const isCallerAdmin = callerEmailLower ? admins.indexOf(callerEmailLower) !== -1 : false;
+
+    if (!isSessionAdmin && !isCallerAdmin) {
+      throw new Error('Access denied: Only owner or sheet-admins can delete events');
+    }
+  
     const row = findEventRow(eventId);
     
     if (!row) {
@@ -518,6 +588,17 @@ function deleteEvent(eventId) {
       });
     }
     
+    // Delete picture from Drive if it exists
+    const pictureUrl = sheet.getRange(row, 8).getValue();
+    if (pictureUrl && pictureUrl.toString().trim() !== '') {
+      try {
+        deleteImageFromDrive(pictureUrl.toString());
+        Logger.log('Picture deleted from Drive');
+      } catch (e) {
+        Logger.log('Warning: Could not delete picture from Drive: ' + e);
+      }
+    }
+    
     sheet.deleteRow(row);
     Logger.log('✅ Event deleted from row: ' + row);
     return { success: true, message: 'Event deleted successfully!' };
@@ -530,10 +611,6 @@ function deleteEvent(eventId) {
 
 // ==================== FILE UPLOAD (CALENDAR PAGE) ====================
 function uploadFile(fileData, fileName, mimeType, eventId) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can upload files');
-  }
-  
   try {
     // Find event first
     const row = findEventRow(eventId);
@@ -624,10 +701,6 @@ function uploadFile(fileData, fileName, mimeType, eventId) {
 
 // ==================== DELETE FILE ====================
 function deleteFile(fileId, eventId) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can delete files');
-  }
-  
   try {
     Logger.log('Deleting file - File ID: ' + fileId + ' | Event ID: ' + eventId);
     
@@ -684,10 +757,6 @@ function deleteFile(fileId, eventId) {
 
 // ==================== UPLOAD IMAGE TO DRIVE ====================
 function uploadImageToDrive(imageData, fileName, eventId) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can upload images');
-  }
-  
   try {
     const base64Data = imageData.split(',')[1] || imageData;
     
@@ -751,7 +820,7 @@ function uploadImageToDrive(imageData, fileName, eventId) {
 
     const fileId = file.getId();
     // Use a Drive-friendly public URL that works in <img src=>
-    const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+    const imageUrl = `https://lh3.googleusercontent.com/d/${fileId}`;
 
     Logger.log('Image uploaded - Name: ' + newFileName + ' | File ID: ' + fileId);
 
@@ -774,10 +843,6 @@ function uploadImageToDrive(imageData, fileName, eventId) {
 // ------------------ Improved deleteImageFromDrive (override) ------------------
 // This implementation is appended to be sure it overrides any previous one
 function deleteImageFromDrive(imageUrl) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can delete images');
-  }
-
   try {
     // Attempt to extract file ID from common Drive URL patterns
     let fileId = null;
@@ -812,10 +877,6 @@ function deleteImageFromDrive(imageUrl) {
 
 // ==================== DELETE IMAGE FROM DRIVE ====================
 function deleteImageFromDrive(imageUrl) {
-  if (!isOwner()) {
-    throw new Error('Access denied: Only owner can delete images');
-  }
-  
   try {
     // Extract file ID from URL
     let fileId = null;
@@ -937,6 +998,17 @@ function doPost(e) {
     const body = e.postData && e.postData.type === 'application/json' ? JSON.parse(e.postData.contents) : (e.parameter || {});
     const action = body.action || e.parameter.action;
     const idToken = body.id_token || e.parameter.id_token;
+    const userEmailFromClient = body.userEmail || e.parameter.userEmail; // Allow client-side email for static hosting
+    
+    // Parse eventData if it's a JSON string (from form-encoded POST)
+    let eventData = body.eventData;
+    if (eventData && typeof eventData === 'string') {
+      try {
+        eventData = JSON.parse(eventData);
+      } catch (e) {
+        Logger.log('Could not parse eventData as JSON: ' + e);
+      }
+    }
 
     // Verify token and get email
     let userEmail = null;
@@ -945,27 +1017,50 @@ function doPost(e) {
       verified = verifyIdToken(idToken);
       if (verified && verified.email) userEmail = verified.email.toLowerCase();
     }
+    
+    // If no token-based email, use client-provided email (for static hosting)
+    if (!userEmail && userEmailFromClient) {
+      userEmail = userEmailFromClient.toLowerCase();
+      Logger.log('Using client-provided email:', userEmail);
+    }
 
     // Helper to check admin
     const isAdminUser = function() {
-      if (!userEmail) return false;
+      if (!userEmail) {
+        Logger.log('isAdminUser: no userEmail available');
+        return false;
+      }
       const admins = getAdminEmails();
-      return admins.indexOf(userEmail) !== -1;
+      const result = admins.indexOf(userEmail) !== -1;
+      Logger.log('isAdminUser check: email=' + userEmail + ', isAdmin=' + result);
+      return result;
     };
 
     // Route actions
     switch (action) {
       case 'addEvent':
-        if (!isAdminUser()) return jsonResponse({ success: false, error: 'Unauthorized' });
-        return jsonResponse(addEvent(body.eventData));
+        Logger.log('addEvent action: checking admin status...');
+        if (!isAdminUser()) {
+          Logger.log('❌ addEvent denied - user not admin');
+          return jsonResponse({ success: false, error: 'Unauthorized' });
+        }
+        Logger.log('✅ addEvent authorized - calling addEvent with eventData: ' + JSON.stringify(eventData));
+        return jsonResponse(addEvent(eventData));
 
       case 'updateEvent':
-        if (!isAdminUser()) return jsonResponse({ success: false, error: 'Unauthorized' });
-        return jsonResponse(updateEvent(body.eventId, body.eventData));
+        Logger.log('updateEvent action: checking admin status...');
+        if (!isAdminUser()) {
+          Logger.log('❌ updateEvent denied - user not admin');
+          return jsonResponse({ success: false, error: 'Unauthorized' });
+        }
+        Logger.log('✅ updateEvent authorized - calling updateEvent with userEmail: ' + userEmail);
+        // Pass the resolved userEmail to updateEvent so sheet-admins (validated above)
+        // can be authorized inside the function when Session user is not available.
+        return jsonResponse(updateEvent(body.eventId, eventData, userEmail));
 
       case 'deleteEvent':
-        if (!isAdminUser()) return jsonResponse(deleteEvent(body.eventId));
-        return jsonResponse({ success: false, error: 'Unauthorized' });
+        if (!isAdminUser()) return jsonResponse({ success: false, error: 'Unauthorized' });
+        return jsonResponse(deleteEvent(body.eventId, userEmail));
 
       case 'uploadFile':
         if (!isAdminUser()) return jsonResponse({ success: false, error: 'Unauthorized' });
@@ -976,12 +1071,12 @@ function doPost(e) {
         return jsonResponse(uploadImageToDrive(body.imageData, body.fileName, body.eventId));
 
       case 'deleteFile':
-        if (!isAdminUser()) return jsonResponse(deleteFile(body.fileId, body.eventId));
-        return jsonResponse({ success: false, error: 'Unauthorized' });
+        if (!isAdminUser()) return jsonResponse({ success: false, error: 'Unauthorized' });
+        return jsonResponse(deleteFile(body.fileId, body.eventId));
 
       case 'deleteImageFromDrive':
-        if (!isAdminUser()) return jsonResponse(deleteImageFromDrive(body.imageUrl));
-        return jsonResponse({ success: false, error: 'Unauthorized' });
+        if (!isAdminUser()) return jsonResponse({ success: false, error: 'Unauthorized' });
+        return jsonResponse(deleteImageFromDrive(body.imageUrl));
 
       case 'checkAdmin':
         // Allow checking admin by email parameter (no token required)

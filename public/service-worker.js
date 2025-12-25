@@ -46,13 +46,18 @@ self.addEventListener('activate', event => {
 
 // Fetch Strategy: Network First, Cache Fallback
 self.addEventListener('fetch', event => {
+  // Only cache GET requests; skip caching for POST, PUT, DELETE, etc.
+  if (event.request.method !== 'GET') {
+    return; // Let browser handle it normally
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
         // Clone the response
         const responseClone = response.clone();
         
-        // Cache the fetched response
+        // Cache the fetched response (only for GET requests)
         caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, responseClone);
         });

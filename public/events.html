@@ -2,6 +2,7 @@
 <html>
 <head>
   <base target="_top">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#667eea">
   
@@ -654,6 +655,10 @@
         grid-template-columns: 1fr 1fr; /* Rendu column-ah pirikkum */
         gap: 10px;
       }
+
+      #logoutBtn {
+        display: none;
+      }
     }
     
     @media (max-width: 480px) {
@@ -710,6 +715,7 @@
         <button class="btn btn-primary" id="adminBtn" style="display: none;" onclick="goToAdmin()">
           <i class="fas fa-tools"></i> Admin Panel
         </button>
+        <button class="btn btn-secondary" id="logoutBtn" style="margin-left:10px;" onclick="logoutUser()">Logout</button>
         <!-- Debug button removed in production -->
       </div>
     </div>
@@ -815,7 +821,15 @@
   
   <script>
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec'; // ⚠️ இங்க உங்க Apps Script URL போடுங்க
+    // Logging utility (for debugging)
+    function log(...args) {
+      console.log('[Events]', ...args);
+    }
+
+    // TIER 1: Owner override list (same as calendar.html)
+    const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
+    
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD4I7-_YjxQG1WoQvo-2sVH6PWwLnFv7BDwysNGvybV_BHG9lKXBT9nePMLTGUOe_M/exec'; // ⚠️ இங்க உங்க Apps Script URL போடுங்க
 
     // Authentication Check
     window.addEventListener('load', function() {
@@ -831,6 +845,8 @@
       } else {
         console.log('Authenticated user:', userEmail);
       }
+      // Initialize app (loads events, checks owner) after load
+      try { initApp(); } catch (e) { console.error('initApp failed:', e); }
     });
 
 
@@ -854,13 +870,15 @@
             loadEvents();
           })
           .getWebAppUrl();
-      } else if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec') {
-        // Netlify/static deployment: use configured SCRIPT_URL for API calls
+      } else if (SCRIPT_URL) {
+        // Static deployment: use configured SCRIPT_URL for API calls (REST endpoint)
+        console.log('Events Gallery: Using SCRIPT_URL =', SCRIPT_URL);
         webAppUrl = SCRIPT_URL;
         checkOwner();
         loadEvents();
       } else {
         // No backend configured — run in demo mode
+        console.warn('Events Gallery: No SCRIPT_URL configured');
         checkOwner();
         loadEvents();
       }
@@ -888,7 +906,8 @@
     // Use form-encoded body to avoid CORS preflight issues (no OPTIONS)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
-      const body = Object.assign({}, payload, { id_token: idToken });
+      const userEmail = localStorage.getItem('userEmail') || '';
+      const body = Object.assign({}, payload, { id_token: idToken, userEmail: userEmail });
       const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
       const params = new URLSearchParams();
       for (const k in body) {
@@ -899,37 +918,50 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params.toString()
-      }).then(r => r.json());
+      }).then(r => {
+        if (!r.ok) console.error('postToScript HTTP error:', r.status);
+        return r.json();
+      });
     }
 
     function checkOwner() {
-      // Prefer server-side google.script.run if available
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(owner) {
-            isOwner = owner;
-            if (owner && window.innerWidth > 768) {
-              document.getElementById('adminBtn').style.display = 'block';
-            }
-          })
-          .isOwner();
-        return;
+      // Check if user is in ADMIN_OVERRIDE_EMAILS (TIER 1 - Full Admin = Owner)
+      const userEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
+      const ADMIN_OVERRIDES_LOWER = ADMIN_OVERRIDE_EMAILS.map(e => (e || '').toLowerCase());
+      const isOwnerOverride = ADMIN_OVERRIDES_LOWER.indexOf(userEmail) !== -1;
+      
+      isOwner = isOwnerOverride;
+      localStorage.setItem('isOwnerOverride', isOwnerOverride ? 'true' : 'false');
+      
+      // Show admin button for TIER 1 owners on desktop
+      if (isOwnerOverride && window.innerWidth > 768) {
+        const adminBtn = document.getElementById('adminBtn');
+        if (adminBtn) adminBtn.style.display = 'block';
       }
-
-      // Fallback: call REST-style API at SCRIPT_URL?action=checkAdmin&email=...
-      const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec' && userEmail) {
+      
+      console.log('[Events] checkOwner: user=' + userEmail + ', isOwner=' + isOwner);
+      
+      // TIER 2: Check if user is in Admins sheet (for edit access)
+      if (!isOwnerOverride && SCRIPT_URL && userEmail) {
+        console.log('[Events] Checking Admins sheet for:', userEmail);
         fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(userEmail)}`)
-          .then(res => res.json())
+          .then(r => r.json())
           .then(data => {
-            isOwner = !!(data && data.isAdmin);
-            if (isOwner && window.innerWidth > 768) {
-              document.getElementById('adminBtn').style.display = 'block';
+            const isSheetAdmin = !!(data && data.isAdmin);
+            window.canEditEvents = isOwnerOverride || isSheetAdmin;
+            localStorage.setItem('isSheetAdmin', isSheetAdmin ? 'true' : 'false');
+            console.log('[Events] Sheet admin check:', { isSheetAdmin, canEditEvents: window.canEditEvents });
+            // Re-render events to show/hide edit buttons based on new canEditEvents flag
+            if (allEvents && allEvents.length > 0) {
+              displayEvents(currentMonthEvents);
             }
           })
           .catch(err => {
-            console.log('checkOwner fetch error', err);
+            console.log('[Events] Sheet admin check failed:', err);
+            window.canEditEvents = isOwnerOverride;
           });
+      } else {
+        window.canEditEvents = isOwnerOverride;
       }
     }
     
@@ -948,16 +980,24 @@
           .withFailureHandler(handleEventsError)
           .getEvents();
       } 
-      // Method 2: Try Fetch API (for Netlify deployment)
-      else if ((typeof webAppUrl === 'string' && webAppUrl) || (SCRIPT_URL && SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec')) {
+      // Method 2: Try Fetch API (for static hosting / REST backend)
+      else if ((typeof webAppUrl === 'string' && webAppUrl) || SCRIPT_URL) {
         const apiUrl = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : SCRIPT_URL;
         log('Using Fetch API with URL:', apiUrl);
         const userEmail = localStorage.getItem('userEmail');
         fetch(`${apiUrl}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+          })
           .then(data => {
             log('Events data received', data);
             if (data && data.success && data.events) {
+              handleEventsSuccess(data.events);
+            } else if (data && Array.isArray(data)) {
+              // Handle direct array response
+              handleEventsSuccess(data);
+            } else if (data && data.events && Array.isArray(data.events)) {
               handleEventsSuccess(data.events);
             } else {
               throw new Error(data && (data.error || data.message) ? (data.error || data.message) : 'Failed to load events');
@@ -1044,6 +1084,7 @@
       : '<i class="fas fa-calendar-alt"></i>';
     
     const eventId = event.id.replace(/'/g, "\\'"); // Escape quotes
+    const canEdit = window.canEditEvents || isOwner; // Check both flags
       
     return `
       <div class="event-card" id="card-${btoa(event.id).replace(/=/g, '')}">
@@ -1059,12 +1100,14 @@
                   <span><i class="fas fa-map-marker-alt"></i> ${event.location}</span>
                 </div>
                 <div class="event-actions-mob" id="event-edit-mob">
-                  <button class="btn-edit" onclick="editEvent(\`${eventId}\`)">
-                    <i class="fas fa-edit"></i> Edit
-                  </button>
+                  ${canEdit ? `
+                    <button class="btn-edit" onclick="editEvent(\`${eventId}\`)">
+                      <i class="fas fa-edit"></i> Edit
+                    </button>
+                  ` : ''}
                 </div>
               </div>
-          ${isOwner ? `
+          ${canEdit ? `
             <div class="event-actions" id="event-edit-desktop">
               <button class="btn-edit" onclick='editEvent(\`${eventId}\`)'>
                 <i class="fas fa-edit"></i> Edit
@@ -1098,7 +1141,7 @@
     }
     
     function editEvent(eventId) {
-      if (!isOwner) {
+      if (!window.canEditEvents && !isOwner) {
         showAlert('Only owner can edit events', 'error');
         return;
       }
@@ -1106,6 +1149,9 @@
       const event = allEvents.find(e => e.id === eventId);
       if (!event) return;
   
+      // Store full event object for later use in save
+      window.currentEditingEvent = event;
+      
       document.getElementById('eventId').value = event.id;
       document.getElementById('eventEvents').value = event.events;
       document.getElementById('eventDescription').value = event.description;
@@ -1237,7 +1283,7 @@
     function saveEvent(e) {
       e.preventDefault();
   
-      if (!isOwner) {
+      if (!window.canEditEvents && !isOwner) {
         showAlert('Only owner can save events', 'error');
         return;
       }
@@ -1249,12 +1295,15 @@
         showAlert('Event not found', 'error');
         return;
       }
+      
+      console.log('Events saveEvent:', { eventId, event });
   
       const saveBtn = e.target.querySelector('button[type="submit"]');
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
   
       const pictureValue = document.getElementById('eventPicture').value.trim();
+      console.log('Picture value:', pictureValue);
   
       // Check if it's a data URL (uploaded file) or regular URL
       if (pictureValue.startsWith('data:image')) {
@@ -1262,8 +1311,10 @@
         showAlert('Uploading image to Google Drive...', 'success');
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
+          console.log('Using google.script.run for image upload');
           google.script.run
             .withSuccessHandler(function(uploadResult) {
+              console.log('Image upload success:', uploadResult);
               if (uploadResult.success) {
                 // Now update event with Drive URL
                 updateEventWithData(eventId, event, uploadResult.imageUrl, saveBtn);
@@ -1274,6 +1325,7 @@
               }
             })
             .withFailureHandler(function(error) {
+              console.error('Image upload error:', error);
               showAlert('Image upload error: ' + error, 'error');
               saveBtn.disabled = false;
               saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
@@ -1281,8 +1333,10 @@
             .uploadImageToDrive(pictureValue, 'event_image.jpg', eventId);
         } else {
           // POST to REST API
+          console.log('Using postToScript for image upload');
           postToScript({ action: 'uploadImageToDrive', imageData: pictureValue, fileName: 'event_image.jpg', eventId: eventId })
             .then(uploadResult => {
+              console.log('Image upload success:', uploadResult);
               if (uploadResult.success) {
                 updateEventWithData(eventId, event, uploadResult.imageUrl, saveBtn);
               } else {
@@ -1292,6 +1346,7 @@
               }
             })
             .catch(err => {
+              console.error('Image upload error:', err);
               showAlert('Image upload error: ' + err, 'error');
               saveBtn.disabled = false;
               saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
@@ -1299,25 +1354,35 @@
         }
       } else {
         // Direct URL or empty - save directly
+        console.log('No image upload needed, saving directly');
         updateEventWithData(eventId, event, pictureValue, saveBtn);
       }
     }
 
 function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
+  // Use the stored event object to preserve all fields
+  const originalEvent = window.currentEditingEvent || event;
+  
+  console.log('updateEventWithData:', { eventId, originalEvent, pictureUrl });
+  
   const eventData = {
-    eventName: event.eventName,
+    eventName: originalEvent.eventName,
     events: document.getElementById('eventEvents').value,
-    date: event.date,
-    time: event.time,
-    location: event.location,
+    date: originalEvent.date,
+    time: originalEvent.time,
+    location: originalEvent.location,
     description: document.getElementById('eventDescription').value,
-    attendeeList: event.attendeeList,
+    attendeeList: originalEvent.attendeeList,
     pictureUrl: pictureUrl
   };
   
+  console.log('Sending eventData:', eventData);
+  
   if (typeof google !== 'undefined' && google.script && google.script.run) {
+    console.log('Using google.script.run for updateEvent');
     google.script.run
       .withSuccessHandler(function(result) {
+        console.log('updateEvent success:', result);
         if (result.success) {
           showAlert(result.message, 'success');
           closeModal();
@@ -1329,6 +1394,7 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
         saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
       })
       .withFailureHandler(function(error) {
+        console.error('updateEvent error:', error);
         showAlert('Error: ' + error, 'error');
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
@@ -1337,10 +1403,13 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
     return;
   }
 
-  // Fallback: POST updateEvent
+  // Fallback: POST updateEvent with userEmail for sheet-admin authorization
+  console.log('Using postToScript for updateEvent');
   const idToken = localStorage.getItem('googleToken') || '';
-  postToScript({ action: 'updateEvent', eventId: eventId, eventData: eventData, id_token: idToken })
+  const userEmail = localStorage.getItem('userEmail') || '';
+  postToScript({ action: 'updateEvent', eventId: eventId, eventData: eventData, id_token: idToken, userEmail: userEmail })
     .then(result => {
+      console.log('postToScript result:', result);
       if (result.success) {
         showAlert(result.message || 'Saved', 'success');
         closeModal();
@@ -1349,7 +1418,10 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
         showAlert(result.message || result.error || 'Update failed', 'error');
       }
     })
-    .catch(err => showAlert('Error: ' + err, 'error'))
+    .catch(err => {
+      console.error('postToScript error:', err);
+      showAlert('Error: ' + err, 'error');
+    })
     .finally(() => {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
@@ -1488,6 +1560,25 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
 
     // ==================== START APP ====================
     window.addEventListener('load', initApp);
+  </script>
+  <script>
+    function logoutUser() {
+      try {
+        const token = localStorage.getItem('googleToken');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('googleToken');
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('oneTapShown');
+        if (window.google && google.accounts && google.accounts.id && typeof google.accounts.id.disableAutoSelect === 'function') {
+          try { google.accounts.id.disableAutoSelect(); } catch (e) { console.warn('disableAutoSelect failed', e); }
+        }
+        if (token && token !== 'manual') {
+          try { fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(token), { method: 'POST', mode: 'no-cors' }); } catch (e) { }
+        }
+        setTimeout(() => { window.location.href = '/'; }, 150);
+      } catch (e) { window.location.href = '/'; }
+    }
   </script>
 </body>
 </html>

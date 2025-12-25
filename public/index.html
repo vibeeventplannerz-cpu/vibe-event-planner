@@ -21,7 +21,9 @@
   <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png">
   
   <title>Vibe Event Planner'Z - Login</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogle()"></script>
+
   <style>
     * {
       margin: 0;
@@ -31,7 +33,7 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #768bec 0%, #7407e0 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -47,10 +49,16 @@
     }
     
     .login-card {
-      background: white;
+      /* Translucent background */
+      /* background: hsl( 27, 10%, 90%, 0.5); */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px); /*For Safari support */
+      background: linear-gradient(to top,#8f26e6 0%, #000 100%);
       border-radius: 24px;
       padding: 48px 40px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); */
+      box-shadow: inset 0 0 1px 1px hsl(204, 100%, 90%, 1),
+                  10px 10px 60px 20px hsl(194, 100%, 9%, 0.5);
       transform: translateY(0);
       transition: all 0.3s ease;
     }
@@ -66,26 +74,31 @@
     }
     
     .logo {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+      /* border-radius: 50%; */
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 16px;
-      font-size: 36px;
+      /* Glow effect */
+      filter: drop-shadow(0 0 15px rgba(255, 170, 60, 0.6))
+              drop-shadow(0 0 30px rgba(255, 120, 0, 0.4));
+      /* font-size: 36px; */
       animation: pulse 2s ease-in-out infinite;
     }
     
     @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      0%, 100% { transform: scale(1.05); }
+      50% { transform: scale(1.3); }
     }
     
     h1 {
-      font-size: 28px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-size: 30px;
+      font-weight: bold;
+      font-family: playfair display, serif;
+      background: linear-gradient(135deg, #f0a925 10%, #ec300f 90%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -93,7 +106,7 @@
     }
     
     .subtitle {
-      color: #666;
+      color: #e2e2e2;
       font-size: 14px;
     }
     
@@ -106,19 +119,44 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 16px;
-      color: #555;
+      color: #f0f0f0;
       font-size: 14px;
     }
     
     .feature-icon {
       width: 40px;
       height: 40px;
-      background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+      background: linear-gradient(135deg, #ffffffb4 0%, #96939920 100%);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
+    }
+    /* Manual credentials form */
+    .manual-login {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .manual-login input {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #e6e6e6;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    .manual-signin-btn {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
     }
     
     .google-signin {
@@ -147,6 +185,13 @@
     .google-signin:active {
       transform: translateY(0);
     }
+
+    .letter {
+      text-align: center;
+      margin: 10px 0;
+      color: #0f0f0f;
+    }
+    
     
     .footer-text {
       text-align: center;
@@ -193,13 +238,13 @@
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f0a925 10%, #ec300f 90%);
       color: white;
       border: none;
       padding: 15px 25px;
       border-radius: 50px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 800;
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
       z-index: 9999;
@@ -214,13 +259,23 @@
     #installBtn:hover {
       box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
     }
+
+     @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .login-card {
+        padding: 32px 24px;
+        margin-top: -70px;
+      }
+     }
   </style>
 </head>
 <body>
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <div class="logo">📅</div>
+        <img class="logo" src="/icons/logo.webp" alt="" loading="lazy">
         <h1>Vibe Event Planner'Z</h1>
         <p class="subtitle">✨ Welcome! Please sign in to continue</p>
       </div>
@@ -245,25 +300,27 @@
           <span>Real-time updates</span>
         </div>
       </div>
+
+      <!-- Google Sign-In Button Container -->
+      <div id="g_id_button_container" style="margin-top:8px;"></div>
+
+      <div class="letter" style="color: white;"><h4>OR</h4></div>
       
+      <form id="manualSignIn" class="manual-login" onsubmit="event.preventDefault(); handleManualSignIn();">
+        <input id="manualEmail" type="email" placeholder="Email" required />
+        <input id="manualPassword" type="password" placeholder="Password" required />
+        <button class="manual-signin-btn" type="submit">Sign in</button>
+      </form>
+
       <div id="g_id_onload"
            data-client_id="717691635464-pfsk7occ0pgagqakq6u6nsevg0ocjukr.apps.googleusercontent.com"
            data-callback="handleCredentialResponse">
       </div>
-      
-      <button class="google-signin" onclick="handleGoogleSignIn()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-        </svg>
-        Sign in with Google
-      </button>
+
     </div>
     
     <p class="footer-text">
-      Need help? Contact admin@vibeeventplanner.com
+      Need help? Contact - vibeventzz@gmail.com
     </p>
   </div>
 
@@ -274,41 +331,94 @@
 
   <script>
     // Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGdQ3uZeuWHBc0kztc2zVXqBQjXjlf6Ub3GRm0OW0v4pa1I_4P0kx48wM_siGshZHc/exec';
-    
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD4I7-_YjxQG1WoQvo-2sVH6PWwLnFv7BDwysNGvybV_BHG9lKXBT9nePMLTGUOe_M/exec';
+
+    // Google Identity state
+    let isGoogleInitialized = false;
+    const GOOGLE_CLIENT_ID = '717691635464-pfsk7occ0pgagqakq6u6nsevg0ocjukr.apps.googleusercontent.com';
+
+    // Called when the library has loaded (we attach this via the script onload)
+    function initGoogle() {
+      try {
+        if (!window.google || !google.accounts || !google.accounts.id) {
+          console.warn('Google Identity Services not available yet');
+          return;
+        }
+
+        if (!isGoogleInitialized) {
+          google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse
+          });
+          isGoogleInitialized = true;
+
+          // Render the official Google Sign-In button (fallback for users who dismissed One Tap)
+          try {
+            const container = document.getElementById('g_id_button_container');
+            if (container) {
+              google.accounts.id.renderButton(container, {
+                theme: 'outline',
+                size: 'large'
+              });
+            }
+          } catch (e) {
+            console.warn('renderButton failed', e);
+          }
+
+          // Prompt One Tap on first visit and listen for dismissal so we can log reasons
+          try {
+            showOneTapIfFirstVisit();
+          } catch (e) {
+            console.warn('prompt (first-visit) failed', e);
+          }
+        }
+      } catch (e) {
+        console.warn('initGoogle error:', e);
+      }
+    }
+
     // Google Sign-In Callback
     function handleCredentialResponse(response) {
       showLoading(true);
-      
-      // Decode JWT token to get user info
-      const userInfo = parseJwt(response.credential);
-      const userEmail = userInfo.email;
-      
-      // Store authentication
-      localStorage.setItem('userEmail', userEmail);
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('googleToken', response.credential);
-      
-      // Check admin status
-      checkAdminStatus(userEmail);
+
+      try {
+        // Decode JWT token to get user info
+        const userInfo = parseJwt(response.credential);
+        const userEmail = userInfo.email;
+
+        // Store authentication
+        localStorage.setItem('userEmail', userEmail);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('googleToken', response.credential);
+
+        // Check admin status
+        checkAdminStatus(userEmail);
+      } catch (err) {
+        console.error('handleCredentialResponse error', err);
+        showError('Sign-in failed. Please try again.');
+      }
     }
-    
+
     function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return {};
+      }
     }
-    
+
     async function checkAdminStatus(email) {
       try {
         const response = await fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(email)}`);
         const data = await response.json();
-        
+
         localStorage.setItem('isAdmin', data.isAdmin);
-        
+
         // Redirect to calendar
         window.location.href = '/calendar.html';
       } catch (error) {
@@ -319,34 +429,121 @@
         }, 2000);
       }
     }
-    
-    function handleGoogleSignIn() {
-      google.accounts.id.prompt();
+
+    // Show One Tap prompt only once per user (first visit)
+    function showOneTapIfFirstVisit() {
+      try {
+        if (localStorage.getItem('oneTapShown') === 'true') return;
+
+        google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed && notification.isNotDisplayed()) {
+            console.warn('One Tap not displayed:', notification.getNotDisplayedReason && notification.getNotDisplayedReason());
+          }
+          if (notification.isDismissedMoment && notification.isDismissedMoment()) {
+            console.warn('One Tap dismissed:', notification.getDismissedReason && notification.getDismissedReason());
+          }
+          if (notification.isSkippedMoment && notification.isSkippedMoment()) {
+            console.warn('One Tap skipped:', notification.getSkippedReason && notification.getSkippedReason());
+          }
+        });
+
+        localStorage.setItem('oneTapShown', 'true');
+      } catch (e) {
+        console.warn('showOneTapIfFirstVisit error', e);
+      }
     }
-    
+
+    // Handle simple manual credentials sign-in (client-only, no backend validation)
+    function handleManualSignIn() {
+      const email = (document.getElementById('manualEmail') || {}).value || '';
+      const password = (document.getElementById('manualPassword') || {}).value || '';
+
+      if (!email || !password) {
+        return showError('Please provide both email and password.');
+      }
+
+      showLoading(true);
+
+      // NOTE: This is a client-only stub. Replace with real auth if needed.
+      try {
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('googleToken', 'manual');
+        localStorage.setItem('isAdmin', 'false');
+
+        // small delay to show spinner
+        setTimeout(() => {
+          window.location.href = '/calendar.html';
+        }, 300);
+      } catch (e) {
+        console.error('Manual sign-in error', e);
+        showError('Sign-in failed. Try again.');
+      }
+    }
+
+    // Trigger sign-in prompt; ensure library is ready first
+    async function handleGoogleSignIn() {
+      showLoading(true);
+
+      // Wait for the Google library to become available (short timeout)
+      const waitForGoogle = () => new Promise(resolve => {
+        let attempts = 0;
+        const iv = setInterval(() => {
+          attempts++;
+          if (window.google && google.accounts && google.accounts.id) {
+            clearInterval(iv);
+            resolve(true);
+          } else if (attempts > 30) { // ~3 seconds
+            clearInterval(iv);
+            resolve(false);
+          }
+        }, 100);
+      });
+
+      const ready = await waitForGoogle();
+      showLoading(false);
+      if (!ready) {
+        return showError('Google Sign-In failed to load. Check your network and try again.');
+      }
+
+      if (!isGoogleInitialized) initGoogle();
+
+      try {
+        google.accounts.id.prompt();
+      } catch (e) {
+        console.warn('prompt failed, attempting a fallback render:', e);
+        try {
+          // As a fallback, try a direct initialize + prompt
+          initGoogle();
+          google.accounts.id.prompt();
+        } catch (err) {
+          console.error('Sign-in fallback failed:', err);
+          showError('Unable to start Google Sign-In.');
+        }
+      }
+    }
+
     function showLoading(show) {
       document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
     }
-    
+
     function showError(message) {
       const errorEl = document.getElementById('errorMessage');
       errorEl.textContent = message;
       errorEl.style.display = 'block';
       showLoading(false);
     }
-    
+
     // Check if already authenticated
     window.onload = function() {
       const isAuthenticated = localStorage.getItem('isAuthenticated');
       if (isAuthenticated === 'true') {
         window.location.href = '/calendar.html';
+        return;
       }
-      
-      // Initialize Google Sign-In
-      google.accounts.id.initialize({
-        client_id: '717691635464-pfsk7occ0pgagqakq6u6nsevg0ocjukr.apps.googleusercontent.com',
-        callback: handleCredentialResponse
-      });
+
+      // Attempt to init if library already loaded
+      try { initGoogle(); } catch (e) { /* handled in initGoogle */ }
     };
   </script>
   
