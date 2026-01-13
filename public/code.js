@@ -248,81 +248,124 @@ function archiveOldEvents() {
       return { success: false, message: 'Archive runs only on 1st of month' };
     }
     
-    // Get current month, previous month, and month to archive (2+ months old)
+    // Get current month and year
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     
-    // Month to archive (2 months ago)
-    const archiveMonth = currentMonth <= 1 ? currentMonth + 10 : currentMonth - 2;
-    const archiveYear = currentMonth <= 1 ? currentYear - 1 : currentYear;
-    
-    Logger.log('Current month: ' + currentMonth + '/' + currentYear);
-    Logger.log('Previous month: ' + previousMonth + '/' + previousYear);
-    Logger.log('Archive month (2+ months old): ' + archiveMonth + '/' + archiveYear);
+    Logger.log('=== Archive Process Started ===');
+    Logger.log('Current month: ' + getMonthName(currentMonth) + ' ' + currentYear);
+    Logger.log('Previous month: ' + getMonthName(previousMonth) + ' ' + previousYear);
+    Logger.log('Archive threshold: Events older than ' + getMonthName(previousMonth) + ' ' + previousYear);
     
     const sheet = initializeSheet();
     const archiveSheet = initializeArchiveSheet();
     
     const lastRow = sheet.getLastRow();
     if (lastRow <= 1) {
-      Logger.log('No events to archive');
+      Logger.log('No events in sheet');
       return { success: true, message: 'No events to archive' };
     }
     
     const data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
     const rowsToDelete = [];
     let archivedCount = 0;
+    let keptCount = 0;
     
     // Find events that are 2+ months old (older than previous month)
     for (let i = 0; i < data.length; i++) {
+      const eventName = data[i][0];
       const eventDate = data[i][2]; // Column 3 is Date
       
       if (!eventDate || eventDate.toString().trim() === '') {
+        Logger.log('Row ' + (i + 2) + ': Empty date, keeping');
         continue;
       }
       
       try {
-        const dateObj = new Date(eventDate + 'T00:00:00');
-        const eventMonth = dateObj.getMonth();
-        const eventYear = dateObj.getFullYear();
+        // Parse date more carefully
+        let eventMonth, eventYear;
         
-        // Check if event is older than previous month
-        // Keep: current month and previous month
-        // Archive: 2+ months old events
+        if (eventDate instanceof Date) {
+          // If it's already a Date object (from Google Sheets)
+          eventMonth = eventDate.getMonth();
+          eventYear = eventDate.getFullYear();
+        } else {
+          // If it's a string, parse it
+          const dateStr = eventDate.toString().trim();
+          const dateObj = new Date(dateStr);
+          
+          // Check if date parsed successfully
+          if (isNaN(dateObj.getTime())) {
+            Logger.log('Row ' + (i + 2) + ': Could not parse date "' + dateStr + '", keeping');
+            continue;
+          }
+          
+          eventMonth = dateObj.getMonth();
+          eventYear = dateObj.getFullYear();
+        }
+        
+        // Check if event is in current or previous month
         const isCurrentMonth = (eventMonth === currentMonth && eventYear === currentYear);
         const isPreviousMonth = (eventMonth === previousMonth && eventYear === previousYear);
         
-        if (!isCurrentMonth && !isPreviousMonth) {
-          // Event is 2+ months old, archive it
-          archiveSheet.appendRow(data[i]);
-          Logger.log('✅ Archived event: ' + data[i][0] + ' from ' + eventDate);
+        Logger.log('Row ' + (i + 2) + ': ' + eventName + ' [' + eventMonth + '/' + eventYear + '] - Current: ' + isCurrentMonth + ', Previous: ' + isPreviousMonth);
+        
+        if (isCurrentMonth || isPreviousMonth) {
+          // KEEP: Current or previous month
+          Logger.log('  ✅ KEEPING: ' + eventName + ' (' + getMonthName(eventMonth) + ' ' + eventYear + ')');
+          keptCount++;
+        } else {
+          // ARCHIVE: 2+ months old
+          // Format date and time nicely before archiving
+          const formattedData = data[i].slice(); // Make a copy
           
-          // Mark row for deletion (2 because data starts at row 2)
+          // Format the date (column index 2)
+          if (eventDate instanceof Date) {
+            const dateFormatted = formatDateForArchive(eventDate);
+            formattedData[2] = dateFormatted;
+          } else {
+            try {
+              const dateObj = new Date(eventDate.toString());
+              if (!isNaN(dateObj.getTime())) {
+                const dateFormatted = formatDateForArchive(dateObj);
+                formattedData[2] = dateFormatted;
+              }
+            } catch (e) {
+              // Keep original if formatting fails
+            }
+          }
+          
+          archiveSheet.appendRow(formattedData);
+          Logger.log('  📁 ARCHIVING: ' + eventName + ' (' + getMonthName(eventMonth) + ' ' + eventYear + ')');
           rowsToDelete.push(i + 2);
           archivedCount++;
         }
       } catch (e) {
-        Logger.log('Error processing date for row ' + (i + 2) + ': ' + e);
+        Logger.log('Row ' + (i + 2) + ': Error processing - ' + e.toString() + ', keeping');
+        keptCount++;
       }
     }
     
     // Delete rows in reverse order (to avoid index shifting)
     for (let i = rowsToDelete.length - 1; i >= 0; i--) {
       sheet.deleteRow(rowsToDelete[i]);
-      Logger.log('🗑️ Deleted row: ' + rowsToDelete[i]);
     }
     
-    Logger.log('✅ Archive complete: ' + archivedCount + ' events moved');
+    Logger.log('=== Archive Complete ===');
+    Logger.log('✅ Archived: ' + archivedCount);
+    Logger.log('✅ Kept: ' + keptCount);
+    
     return { 
       success: true, 
-      message: 'Archived ' + archivedCount + ' old events. Keeping current + previous month events.',
+      message: 'Archived ' + archivedCount + ' events. Keeping ' + keptCount + ' events from current & previous months.',
       archivedCount: archivedCount,
-      keptMonths: 'Current (' + getMonthName(currentMonth) + ') + Previous (' + getMonthName(previousMonth) + ')'
+      keptCount: keptCount,
+      keptMonths: getMonthName(currentMonth) + ' ' + currentYear + ' + ' + getMonthName(previousMonth) + ' ' + previousYear
     };
   } catch (error) {
-    Logger.log('❌ Error archiving events: ' + error.toString());
+    Logger.log('❌ Error in archiveOldEvents: ' + error.toString());
     return { success: false, message: 'Archive error: ' + error.toString() };
   }
 }
@@ -332,6 +375,31 @@ function getMonthName(monthIndex) {
   const months = ['January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December'];
   return months[monthIndex];
+}
+
+// ==================== FORMAT DATE FOR ARCHIVE SHEET ====================
+function formatDateForArchive(dateObj) {
+  try {
+    if (!(dateObj instanceof Date)) {
+      dateObj = new Date(dateObj);
+    }
+    
+    if (isNaN(dateObj.getTime())) {
+      return dateObj; // Return original if not a valid date
+    }
+    
+    const day = dateObj.getDate();
+    const monthIndex = dateObj.getMonth();
+    const year = dateObj.getFullYear();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Format: "2 Jan 2026"
+    return day + ' ' + months[monthIndex] + ' ' + year;
+  } catch (e) {
+    Logger.log('Error formatting date: ' + e);
+    return dateObj;
+  }
 }
 
 
