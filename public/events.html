@@ -14,6 +14,34 @@
   <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
   
   <title>Events Gallery</title>
+
+  <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
+  <script>
+    (function() {
+      try {
+        const stored = localStorage.getItem('VIBE_THEME_CONFIG');
+        if (stored) {
+          const config = JSON.parse(stored);
+          // Store in document for CSS to use
+          document.documentElement.setAttribute('data-active-theme', config.theme);
+          document.documentElement.setAttribute('data-theme-mode', config.mode);
+          console.log('[InstantLoader] Theme loaded from localStorage:', config.theme);
+        }
+      } catch (e) {
+        console.warn('[InstantLoader] Error loading theme:', e);
+      }
+    })();
+  </script>
+  
+  <!-- Firebase Scripts (MUST be before firebase-config.js) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+
+  <!-- Festival Theme Engine (AFTER Firebase) -->
+  <script src="/themes/_core/theme-engine.js"></script>
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
@@ -449,6 +477,21 @@
       outline: none;
       border-color: #667eea;
     }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
     
     .file-upload-area {
       border: 2px dashed #667eea;
@@ -778,6 +821,11 @@
         </div>
 
         <div class="form-group">
+          <label for="eventAttendeeList"><i class="fas fa-users"></i> Attendee List (comma-separated)</label>
+          <input type="text" id="eventAttendeeList" placeholder="Enter names separated by commas (e.g., Nandha, Deepan, Team)">
+        </div>
+
+        <div class="form-group">
           <label><i class="fas fa-image"></i> Event Picture</label>
   
           <!-- Show current picture if exists -->
@@ -793,7 +841,7 @@
             <p>Click to upload picture</p>
             <small>JPG, PNG, GIF supported</small>
           </div>
-          <input type="file" id="pictureInput" class="file-input" accept="image/*" onchange="handleImageUpload(event)" capture="environment">
+          <input type="file" id="pictureInput" class="file-input" accept="image/*" onchange="handleImageUpload(event)">
           <img id="previewImage" class="preview-image">
           <input type="url" id="eventPicture" placeholder="Or paste image URL" style="width: 100%; margin-top: 10px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
         </div>
@@ -829,7 +877,7 @@
     // TIER 1: Owner override list (same as calendar.html)
     const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
     
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcbDoB5_wCm1vI9FQx3WbxM532uCpyAw4F6YdwdUnksy3C890pbXVFAt2ZTBNAO6A/exec'; // ⚠️ இங்க உங்க Apps Script URL போடுங்க
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNQVY4TTJznIn8g1npTyQG9EAhYb9qxKa38E5_4VbCCyQgaZn3bJDWN5g-sAsMK3xd/exec'; // ✅ Backend URL configured
 
     // Authentication Check
     window.addEventListener('load', function() {
@@ -1155,6 +1203,7 @@
       document.getElementById('eventId').value = event.id;
       document.getElementById('eventEvents').value = event.events;
       document.getElementById('eventDescription').value = event.description;
+      document.getElementById('eventAttendeeList').value = event.attendeeList || '';
       document.getElementById('eventPicture').value = event.pictureUrl;
   
       // Show current picture if exists
@@ -1372,7 +1421,7 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
     time: originalEvent.time,
     location: originalEvent.location,
     description: document.getElementById('eventDescription').value,
-    attendeeList: originalEvent.attendeeList,
+    attendeeList: document.getElementById('eventAttendeeList').value,
     pictureUrl: pictureUrl
   };
   

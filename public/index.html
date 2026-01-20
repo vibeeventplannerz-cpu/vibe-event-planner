@@ -22,6 +22,33 @@
   
   <title>Vibe Event Planner'Z - Login</title>
 
+  <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
+  <script>
+    (function() {
+      try {
+        const stored = localStorage.getItem('VIBE_THEME_CONFIG');
+        if (stored) {
+          const config = JSON.parse(stored);
+          // Store in document for CSS to use
+          document.documentElement.setAttribute('data-active-theme', config.theme);
+          document.documentElement.setAttribute('data-theme-mode', config.mode);
+          console.log('[InstantLoader] Theme loaded from localStorage:', config.theme);
+        }
+      } catch (e) {
+        console.warn('[InstantLoader] Error loading theme:', e);
+      }
+    })();
+  </script>
+
+  <!-- Firebase Scripts (MUST be before firebase-config.js) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+
+  <!-- Festival Theme Engine (AFTER Firebase) -->
+  <script src="/themes/_core/theme-engine.js"></script>
+
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogle()"></script>
 
   <style>
@@ -386,7 +413,7 @@
 
   <script>
     // Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcbDoB5_wCm1vI9FQx3WbxM532uCpyAw4F6YdwdUnksy3C890pbXVFAt2ZTBNAO6A/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNQVY4TTJznIn8g1npTyQG9EAhYb9qxKa38E5_4VbCCyQgaZn3bJDWN5g-sAsMK3xd/exec';
 
     // Google Identity state
     let isGoogleInitialized = false;
@@ -445,6 +472,23 @@
         localStorage.setItem('userEmail', userEmail);
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('googleToken', response.credential);
+
+        // Store user email in backend (Users sheet) - asynchronous, non-critical
+        try {
+          const params = new URLSearchParams();
+          params.append('action', 'storeUserEmail');
+          params.append('userEmail', userEmail);
+          fetch(`${SCRIPT_URL}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+          })
+            .then(r => r.json())
+            .then(data => console.log('[Login] User email stored:', data))
+            .catch(err => console.warn('[Login] Failed to store user email:', err));
+        } catch (storageErr) {
+          console.warn('[Login] User email storage error (non-critical):', storageErr);
+        }
 
         // Check admin status
         checkAdminStatus(userEmail);
@@ -508,34 +552,6 @@
       }
     }
 
-    // Handle simple manual credentials sign-in (client-only, no backend validation)
-    function handleManualSignIn() {
-      const email = (document.getElementById('manualEmail') || {}).value || '';
-      const password = (document.getElementById('manualPassword') || {}).value || '';
-
-      if (!email || !password) {
-        return showError('Please provide both email and password.');
-      }
-
-      showLoading(true);
-
-      // NOTE: This is a client-only stub. Replace with real auth if needed.
-      try {
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('googleToken', 'manual');
-        localStorage.setItem('isAdmin', 'false');
-
-        // small delay to show spinner
-        setTimeout(() => {
-          window.location.href = '/calendar.html';
-        }, 300);
-      } catch (e) {
-        console.error('Manual sign-in error', e);
-        showError('Sign-in failed. Try again.');
-      }
-    }
-
     // Trigger sign-in prompt; ensure library is ready first
     async function handleGoogleSignIn() {
       showLoading(true);
@@ -578,6 +594,68 @@
       }
     }
 
+    // ==================== MANUAL LOGIN HANDLER ====================
+    async function handleManualSignIn() {
+      showLoading(true);
+      
+      try {
+        const email = document.getElementById('manualEmail').value.trim();
+        const password = document.getElementById('manualPassword').value;
+        
+        if (!email || !password) {
+          showError('Email and password are required');
+          showLoading(false);
+          return;
+        }
+        
+        console.log('Validating manual login for:', email);
+        
+        // Call backend to validate credentials against Manual-Login sheet
+        const url = SCRIPT_URL + '?action=validateManualLogin&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password);
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        console.log('Validation result:', result);
+        
+        if (result.success) {
+          console.log('✅ Manual login successful!');
+          localStorage.setItem('userEmail', email);
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('loginMethod', 'manual');
+          localStorage.setItem('isAdmin', 'false');
+          
+          // Store user email in backend
+          try {
+            await fetch(SCRIPT_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'storeUserEmail',
+                userEmail: email
+              })
+            });
+          } catch (e) {
+            console.log('Could not store user email:', e);
+          }
+          
+          console.log('Redirecting to calendar...');
+          setTimeout(() => {
+            window.location.href = '/calendar.html';
+          }, 500);
+        } else {
+          console.error('❌ Login failed:', result.message);
+          showError(result.message || 'Invalid email or password');
+          showLoading(false);
+        }
+        
+      } catch (error) {
+        console.error('Manual login error:', error);
+        showError('Login failed: ' + error.message);
+        showLoading(false);
+      }
+    }
+
     function showLoading(show) {
       document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
     }
@@ -602,7 +680,7 @@
     };
   </script>
   
-  <!-- PWA Scripts - இதை closing </body> tag-க்கு முன்னாடி add பண்ணுங்க -->
+  <!-- PWA Scripts -->
   <script src="/sw-register.js"></script>
 </body>
 </html>

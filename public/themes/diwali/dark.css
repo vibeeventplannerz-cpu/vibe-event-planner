@@ -1,0 +1,235 @@
+/**
+ * Diwali Festival Dark Mode Theme
+ * Festival of Lights - Dark Night Celebration
+ * Colors: Deep Purples, Golds on Dark Background
+ * Features: Night sky ambiance, oil lamp on darkness, celestial feel
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * To change colors, edit the CSS variables below:
+ * --theme-primary, --theme-bg-primary, --theme-text-primary, etc.
+ * All elements automatically update when you change these!
+ * ============================================================
+ */
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] {
+  --diwali-dark-bg: #0a0a0a;
+  --diwali-gold: #ffd700;
+  --diwali-deep-purple: #2c1a4e;
+  --diwali-bright: #f0f0f0;
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #ffd700;
+  --theme-primary-hover: #ffed4e;
+  --theme-primary-active: #ffc107;
+  --theme-primary-light: rgba(255, 215, 0, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #1a0033 0%, #0a0a0a 100%);
+  --theme-card-bg: #2c1a4e;
+  --theme-text-primary: #f0f0f0;
+  --theme-text-secondary: #ffffff;
+  --theme-header-bg: transparent;
+  --theme-btn-text: #1a0033;
+  --theme-border: #ffd700;
+  --theme-day-highlight: #0e9cd4;
+  --theme-day-color: #ac8102;
+  --theme-dark-color: #b98c0e;
+  --theme-color: linear-gradient(135deg, #ece1ac, #fde618);
+}
+
+/* Apply dark background */
+html[data-active-theme="diwali"][data-theme-mode="dark"] {
+  background: linear-gradient(135deg, #1a0033 0%, #0a0a0a 100%) !important;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] body {
+  background: transparent;
+  color: #e0e0e0;
+}
+
+/* Night sky glow effect */
+/* html[data-active-theme="diwali"][data-theme-mode="dark"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, 
+    rgba(255, 215, 0, 0.08) 0%, 
+    rgba(44, 26, 78, 0.3) 50%,
+    transparent 100%);
+  z-index: 1;
+  pointer-events: none;
+} */
+
+/* Golden glow accent line - more vibrant in dark mode */
+html[data-active-theme="diwali"][data-theme-mode="dark"] body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, 
+    #ff8c00 0%, 
+    #ffd700 30%,
+    #ffed4e 50%,
+    #ffd700 70%, 
+    #ff8c00 100%);
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+/* Dark mode cards with golden glow */
+html[data-active-theme="diwali"][data-theme-mode="dark"] .card {
+  border: 4px solid #ffd700;
+  border-radius: 15px;
+  background: linear-gradient(135deg, 
+    rgba(45, 27, 80, 0.9) 0%, 
+    rgba(20, 10, 40, 0.9) 100%);
+  box-shadow: 0 20px 60px rgba(255, 215, 0, 0.2),
+              0 0 40px rgba(255, 215, 0, 0.1),
+              inset 0 0 20px rgba(255, 215, 0, 0.08);
+  color: #e0e0e0;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .cal-body {
+  background: linear-gradient(135deg, 
+    rgba(45, 27, 80, 0.9) 0%, 
+    rgba(20, 10, 40, 0.9) 100%);
+  color: #5f5b5b;
+}
+
+/* Dark mode buttons - bright and golden */
+html[data-active-theme="diwali"][data-theme-mode="dark"] .btn-primary {
+  background: linear-gradient(135deg, #ffed4e, #ff8c00);
+  color: #0a0a0a;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .btn-primary:hover {
+  background: linear-gradient(135deg, #ff8c00, #ffed4e);
+  box-shadow: 0 8px 35px rgba(255, 215, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Dark mode headers - bright and vibrant */
+html[data-active-theme="diwali"][data-theme-mode="dark"] .header,
+html[data-active-theme="diwali"][data-theme-mode="dark"] h1,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .title {
+  color: #ffed4e;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.4),
+               0 0 60px rgba(255, 215, 0, 0.2);
+  font-weight: 700;
+}
+
+/* Dark mode text styling */
+html[data-active-theme="diwali"][data-theme-mode="dark"] {
+  color: #e0e0e0;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] p,
+html[data-active-theme="diwali"][data-theme-mode="dark"] label,
+html[data-active-theme="diwali"][data-theme-mode="dark"] span {
+  color: #e0e0e0;
+}
+
+/* Dark mode form elements */
+html[data-active-theme="diwali"][data-theme-mode="dark"] input,
+html[data-active-theme="diwali"][data-theme-mode="dark"] textarea,
+html[data-active-theme="diwali"][data-theme-mode="dark"] select {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e0e0e0;
+  border-color: #664d99;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] input:focus,
+html[data-active-theme="diwali"][data-theme-mode="dark"] textarea:focus,
+html[data-active-theme="diwali"][data-theme-mode="dark"] select:focus {
+  border-color: #ffd700;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.25);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+/* Dark mode table styling */
+html[data-active-theme="diwali"][data-theme-mode="dark"] table th {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffed4e;
+  border-color: #664d99;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] table td {
+  border-color: #664d99;
+  color: #e0e0e0;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] table tr:hover {
+  background: rgba(255, 215, 0, 0.08);
+}
+
+/* Diwali dark particles */
+.diwali-particle {
+  position: fixed;
+  pointer-events: none;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+/* Oil lamp particles */
+.diwali-particle.lamp::before {
+  content: '🪔';
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+
+/* Fireworks with glow */
+.diwali-particle.fireworks::before {
+  content: '✨';
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+/* Bright stars in night sky */
+.diwali-particle.star::before {
+  content: '⭐';
+  color: #ffed4e;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.7));
+}
+
+/* Glowing flower garland */
+.diwali-particle.flower::before {
+  content: '🎊';
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+
+/* Floating animation for dark mode */
+@keyframes diwaliDarkGlow {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(360deg);
+  }
+}
+
+.diwali-particle {
+  animation: diwaliDarkGlow 10s linear infinite;
+}
+
+/* Responsive dark mode */
+@media (max-width: 768px) {
+  .diwali-particle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .diwali-particle {
+    font-size: 0.9rem;
+  }
+}

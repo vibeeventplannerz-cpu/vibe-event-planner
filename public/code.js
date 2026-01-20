@@ -2,9 +2,130 @@
 const SHEET_NAME = 'Sheet1';
 const ADMIN_SHEET_NAME = 'Admins';
 const ARCHIVE_SHEET_NAME = 'Archive';
+const USERS_SHEET_NAME = 'Users';
+const MANUAL_LOGIN_SHEET_NAME = 'ManualLogin';
 const FALLBACK_ADMIN = 'hn6160324@gmail.com';
 
-// ==================== CORS CONFIGURATION ====================
+// ==================== USER TRACKING ====================
+
+/**
+ * Store user email in Users sheet (no duplicates)
+ * Called when user logs in from index.html
+ */
+function storeUserEmail(email) {
+  try {
+    if (!email || typeof email !== 'string') {
+      return { success: false, message: 'Invalid email' };
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let usersSheet = ss.getSheetByName(USERS_SHEET_NAME);
+
+    // Create Users sheet if it doesn't exist
+    if (!usersSheet) {
+      usersSheet = ss.insertSheet(USERS_SHEET_NAME);
+      usersSheet.appendRow(['Email', 'Login Time']);
+    }
+
+    const emailLower = email.toLowerCase().trim();
+    const data = usersSheet.getDataRange().getValues();
+
+    // Check if email already exists (skip header row)
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toLowerCase().trim() === emailLower) {
+        Logger.log('Email already exists:', emailLower);
+        return { success: true, message: 'Email already exists', isNew: false };
+      }
+    }
+
+    // Add new email with timestamp
+    const timestamp = new Date().toISOString();
+    usersSheet.appendRow([emailLower, timestamp]);
+    Logger.log('New user email stored:', emailLower, timestamp);
+
+    return { success: true, message: 'User email stored', isNew: true };
+  } catch (error) {
+    Logger.log('storeUserEmail error:', error);
+    return { success: false, message: 'Error storing email: ' + error.toString() };
+  }
+}
+
+// ==================== MANUAL LOGIN VALIDATION ====================
+
+/**
+ * Initialize Manual Login sheet
+ */
+function initializeManualLoginSheet() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName(MANUAL_LOGIN_SHEET_NAME);
+    
+    if (!sheet) {
+      sheet = ss.insertSheet(MANUAL_LOGIN_SHEET_NAME);
+      sheet.appendRow(['Email', 'Password']);
+      sheet.getRange(1, 1, 1, 2)
+        .setFontWeight('bold')
+        .setBackground('#667eea')
+        .setFontColor('#ffffff');
+      Logger.log('Created Manual Login sheet');
+    }
+    
+    return sheet;
+  } catch (error) {
+    Logger.log('Error initializing Manual Login sheet:', error);
+    return null;
+  }
+}
+
+/**
+ * Validate manual login credentials (Email + Password)
+ */
+function validateManualLogin(email, password) {
+  try {
+    if (!email || !password) {
+      return { success: false, message: 'Email and password are required' };
+    }
+    
+    const emailLower = email.toLowerCase().trim();
+    const sheet = initializeManualLoginSheet();
+    
+    if (!sheet) {
+      return { success: false, message: 'Manual login not configured' };
+    }
+    
+    const lastRow = sheet.getLastRow();
+    
+    // If only header row exists
+    if (lastRow < 2) {
+      return { success: false, message: 'No manual login accounts configured' };
+    }
+    
+    // Search for matching email and password
+    const data = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+    
+    for (let i = 0; i < data.length; i++) {
+      const sheetEmail = data[i][0] ? data[i][0].toString().toLowerCase().trim() : '';
+      const sheetPassword = data[i][1] ? data[i][1].toString() : '';
+      
+      if (sheetEmail === emailLower && sheetPassword === password) {
+        Logger.log('✅ Manual login successful for:', emailLower);
+        return {
+          success: true,
+          message: 'Login successful',
+          email: emailLower,
+          isManualLogin: true
+        };
+      }
+    }
+    
+    Logger.log('❌ Manual login failed for:', emailLower);
+    return { success: false, message: 'Invalid email or password' };
+  } catch (error) {
+    Logger.log('Error validating manual login:', error);
+    return { success: false, message: 'Login error: ' + error.toString() };
+  }
+}
+
 function doGet(e) {
   const page = e.parameter.page || 'calendar';
   const action = e.parameter.action;
@@ -26,6 +147,16 @@ function doGet(e) {
 
   if (action === 'getEvents') {
     return handleGetEventsAPI(email);
+  }
+
+  // Handle manual login validation
+  if (action === 'validateManualLogin') {
+    const manualEmail = e.parameter.email;
+    const password = e.parameter.password;
+    const result = validateManualLogin(manualEmail, password);
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 
   // Regular page routing...
@@ -497,27 +628,6 @@ function getEvents() {
   } catch (error) {
     Logger.log('Error in getEvents:', error.toString());
     throw new Error('Failed to load events: ' + error.message);
-  }
-}
-
-// ==================== TEST FUNCTION ====================
-// இந்த function run பண்ணி test பண்ணுங்க
-function testGetEvents() {
-  try {
-    const events = getEvents();
-    Logger.log('Test Result - Total Events:', events.length);
-    
-    if (events.length > 0) {
-      Logger.log('First Event:', JSON.stringify(events[0]));
-      Logger.log('✅ SUCCESS - Events loaded successfully!');
-    } else {
-      Logger.log('⚠️ WARNING - No events found. Check your sheet data.');
-    }
-    
-    return events;
-  } catch (error) {
-    Logger.log('❌ ERROR:', error.toString());
-    return null;
   }
 }
 
@@ -1209,6 +1319,16 @@ function doPost(e) {
     const idToken = body.id_token || e.parameter.id_token;
     const userEmailFromClient = body.userEmail || e.parameter.userEmail; // Allow client-side email for static hosting
     
+    // Handle storeUserEmail action (no auth required, called from login page)
+    if (action === 'storeUserEmail' && userEmailFromClient) {
+      return jsonResponse(storeUserEmail(userEmailFromClient));
+    }
+    
+    // Handle manual login validation (no auth required)
+    if (action === 'validateManualLogin' && body.email && body.password) {
+      return jsonResponse(validateManualLogin(body.email, body.password));
+    }
+    
     // Parse eventData if it's a JSON string (from form-encoded POST)
     let eventData = body.eventData;
     if (eventData && typeof eventData === 'string') {
@@ -1308,5 +1428,9 @@ function doPost(e) {
 }
 
 function jsonResponse(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON)
+    .addHeader('Access-Control-Allow-Origin', '*')
+    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }

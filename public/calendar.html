@@ -17,7 +17,34 @@
   
   <title>Event Calendar</title>
 
-  <!-- Font Awesome CDN (head la add pannunga) -->
+  <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
+  <script>
+    (function() {
+      try {
+        const stored = localStorage.getItem('VIBE_THEME_CONFIG');
+        if (stored) {
+          const config = JSON.parse(stored);
+          // Store in document for CSS to use
+          document.documentElement.setAttribute('data-active-theme', config.theme);
+          document.documentElement.setAttribute('data-theme-mode', config.mode);
+          console.log('[InstantLoader] Theme loaded from localStorage:', config.theme);
+        }
+      } catch (e) {
+        console.warn('[InstantLoader] Error loading theme:', e);
+      }
+    })();
+  </script>
+
+  <!-- Firebase Scripts (MUST be before firebase-config.js) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+
+  <!-- Festival Theme Engine (AFTER Firebase) -->
+  <script src="/themes/_core/theme-engine.js"></script>
+
+  <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
@@ -842,6 +869,7 @@
         <!-- <p>Track and manage your events effortlessly</p>  -->
         <h4>Dear Team Members 👬🏻</h4>
         <p>Behind the beauty of every event, your hard work and dedication are on another level🔥. Thanks for being the backbone of Vibe Event Planner'Z!💖</p>
+        <h4 id="festivalGreeting" style="color: var(--theme-primary, #667eea); margin-top: 10px; font-size: 1.5em;"></h4>
       </div>
       <button class="dummy">Dummy Button</button>
       <button id="adminBtn" class="btn-admin" onclick="openAdmin()">🔧 Admin Panel</button>
@@ -855,7 +883,7 @@
     <!-- ADD THIS ALERT BOX -->
     <div id="alertBox" class="alert" style="display: none;"></div>
 
-    <div class="calendar-card">
+    <div class="calendar-card card">
       <div class="calendar-header">
         <h2 id="monthYear"></h2>
         <div class="nav-buttons">
@@ -864,7 +892,7 @@
         </div>
       </div>
 
-      <div class="calendar-body">
+      <div class="calendar-body cal-body">
         <div class="loading" id="loading">Loading events...</div>
         
         <div id="calendarGrid" style="display: none;">
@@ -910,9 +938,37 @@
   <script src="/sw-register.js"></script>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcbDoB5_wCm1vI9FQx3WbxM532uCpyAw4F6YdwdUnksy3C890pbXVFAt2ZTBNAO6A/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNQVY4TTJznIn8g1npTyQG9EAhYb9qxKa38E5_4VbCCyQgaZn3bJDWN5g-sAsMK3xd/exec';
     // prefer webAppUrl when available (set by Google-hosted pages)
     let webAppUrl = SCRIPT_URL;
+
+    // Festival greeting mapping
+    const FESTIVAL_GREETINGS = {
+      'default': '',
+      'newyear': '🎆 Happy New Year!',
+      'pongal': '🌾 Happy Pongal!',
+      'republic-day': '🇮🇳 Happy Republic Day!',
+      'independence-day': '🇮🇳 Happy Independence Day!',
+      'ayudha-pujai': '⚔️ Happy Ayudha Poojai!',
+      'diwali': '🪔 Happy Diwali!',
+      'christmas': '🎄 Merry Christmas!'
+    };
+
+    // Update festival greeting based on active theme
+    function updateFestivalGreeting() {
+      const theme = document.documentElement.getAttribute('data-active-theme') || 'default';
+      const greeting = FESTIVAL_GREETINGS[theme] || '';
+      const greetingEl = document.getElementById('festivalGreeting');
+      if (greetingEl) {
+        greetingEl.textContent = greeting;
+      }
+    }
+
+    // Call on page load
+    window.addEventListener('load', updateFestivalGreeting);
+    // Listen for theme changes
+    window.addEventListener('themeChanged', updateFestivalGreeting);
+
     // Explicit admin override list (only these emails see admin UI, upload/delete, and Events button)
     // Add more emails as needed. Example: ['samplemail333555@gmail.com']
     const ADMIN_OVERRIDE_EMAILS = [

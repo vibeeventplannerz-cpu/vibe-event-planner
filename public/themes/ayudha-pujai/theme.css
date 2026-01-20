@@ -1,0 +1,194 @@
+/**
+ * Ayudha Pujai Festival Theme
+ * Weapon/Tool Worship Celebration
+ * Colors: Deep Reds, Gold, Green (Martial and Royal)
+ * Features: Strength symbolism, ceremonial styling
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * To change colors, edit the CSS variables below:
+ * --theme-primary, --theme-bg-primary, --theme-text-primary, etc.
+ * All elements automatically update when you change these!
+ * ============================================================
+ */
+
+html[data-active-theme="ayudha-pujai"] {
+  --ayudha-red: #a71930;
+  --ayudha-gold: #ffd700;
+  --ayudha-green: #2d5016;
+  --ayudha-bronze: #b8860b;
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #a71930;
+  --theme-primary-hover: #8b1428;
+  --theme-primary-active: #701020;
+  --theme-primary-light: rgba(167, 25, 48, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #faf5f0 0%, #f5f0eb 100%);
+  --theme-card-bg: #fffbf8;
+  --theme-text-primary: #a71930;
+  --theme-text-secondary: #333;
+  --theme-header-bg: transparent;
+  --theme-btn-text: white;
+  --theme-border: #ffd700;
+  --theme-day-highlight:var(--ayudha-gold);
+  --theme-day-text: white;
+  --theme-day-color: #d308e6;
+  --theme-dark-color: #e817f0e0;
+  --theme-color: linear-gradient(135deg, #b30b0b, #d40e92);
+}
+
+/* Powerful ceremonial overlay */
+html[data-active-theme="ayudha-pujai"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, 
+    rgba(167, 25, 48, 0.03) 0%, 
+    transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Ceremonial border accent */
+html[data-active-theme="ayudha-pujai"] body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, 
+    #a71930 0%, 
+    #ffd700 50%, 
+    #a71930 100%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Royal card styling */
+html[data-active-theme="ayudha-pujai"] .card {
+  border-left: 6px solid #a71930;
+  border-top: 3px solid #ffd700;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.98) 0%, 
+    rgba(255, 245, 220, 0.98) 100%);
+  box-shadow: 0 20px 60px rgba(167, 25, 48, 0.12),
+              0 0 30px rgba(255, 215, 0, 0.08);
+}
+
+/* Powerful button styling */
+html[data-active-theme="ayudha-pujai"] .btn-primary {
+  background: linear-gradient(135deg, #a71930, #ffd700);
+  color: white;
+  font-weight: 700;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+html[data-active-theme="ayudha-pujai"] .btn-primary:hover {
+  background: linear-gradient(135deg, #ffd700, #a71930);
+  box-shadow: 0 10px 30px rgba(167, 25, 48, 0.4);
+  transform: translateY(-3px);
+}
+
+/* Strong headers */
+html[data-active-theme="ayudha-pujai"] .header,
+html[data-active-theme="ayudha-pujai"] h1,
+html[data-active-theme="ayudha-pujai"] .title {
+  color: #a71930;
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Form elements with royal styling */
+html[data-active-theme="ayudha-pujai"] input:focus,
+html[data-active-theme="ayudha-pujai"] textarea:focus,
+html[data-active-theme="ayudha-pujai"] select:focus {
+  border-color: #a71930;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(167, 25, 48, 0.15);
+  background: rgba(255, 245, 220, 0.3);
+}
+
+/* Ayudha Pujai martial particles */
+.ayudha-particle {
+  position: fixed;
+  pointer-events: none;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+/* Shield particles */
+.ayudha-particle.shield::before {
+  content: '🛡️';
+}
+
+/* Sword particles */
+.ayudha-particle.sword::before {
+  content: '⚔️';
+}
+
+/* Fire/Power particles */
+.ayudha-particle.power::before {
+  content: '🔥';
+  color: #a71930;
+}
+
+/* Crown particles for royalty */
+.ayudha-particle.crown::before {
+  content: '👑';
+  color: #ffd700;
+}
+
+/* Descending martial animation */
+@keyframes ayudhaDescent {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) rotate(-45deg);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(45deg);
+  }
+}
+
+.ayudha-particle {
+  animation: ayudhaDescent 8s linear infinite;
+}
+
+/* Powerful pulse effect */
+@keyframes ayudhaPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.ayudha-particle.pulse {
+  animation: ayudhaDescent 8s linear infinite, ayudhaPulse 2s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ayudha-particle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ayudha-particle {
+    font-size: 0.9rem;
+  }
+}

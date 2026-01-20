@@ -1,0 +1,61 @@
+/**
+ * Base Theme Styles
+ * Foundation for all theme overlays
+ * Applied only when a festival theme is active
+ */
+
+:root {
+  /* Theme mode detection */
+  --is-dark-mode: 0;
+}
+
+/* Detect dark mode preference */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --is-dark-mode: 1;
+  }
+}
+
+/* Safe Z-index layers */
+:root {
+  --z-particles: 5;
+  --z-decorations: 10;
+  --z-content: 100;
+}
+
+/* Ensure theme overlays don't break interactions */
+.theme-particle,
+.theme-decoration,
+.thoranam-decoration {
+  pointer-events: none;
+}
+
+/* Smooth transitions for theme changes */
+html[data-active-theme] body,
+html[data-active-theme] .container,
+html[data-active-theme] .card {
+  transition: background-color 0.6s ease-in-out,
+              color 0.3s ease-in-out;
+}
+
+/* Prevent layout shifts during theme load */
+html[data-active-theme] {
+  scroll-behavior: smooth;
+}
+
+/* Festival decorations should not interfere with buttons/links */
+button,
+a,
+input,
+select,
+textarea {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* Gradient overlay adjustments for themes */
+@supports (backdrop-filter: blur(10px)) {
+  .theme-overlay {
+    backdrop-filter: blur(0px);
+  }
+}

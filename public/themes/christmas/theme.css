@@ -1,0 +1,215 @@
+/**
+ * Christmas Festival Theme
+ * Holiday Season Celebration
+ * Colors: Red, Green, Gold, White (Classic Christmas)
+ * Features: Festive warmth, holiday spirit, gentle animations
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * To change colors, edit the CSS variables below:
+ * --theme-primary, --theme-bg-primary, --theme-text-primary, etc.
+ * All elements automatically update when you change these!
+ * ============================================================
+ */
+
+html[data-active-theme="christmas"] {
+  --christmas-red: #c41e3a;
+  --christmas-green: #165b33;
+  --christmas-gold: #ffd700;
+  --christmas-white: #f5f5f5;
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #c41e3a;
+  --theme-primary-hover: #a01829;
+  --theme-primary-active: #8a1422;
+  --theme-primary-light: rgba(196, 30, 58, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #ffffff 0%, #fff8dc 100%);
+  --theme-card-bg: #fffef5;
+  --theme-text-primary: #c41e3a;
+  --theme-text-secondary: #333;
+  --theme-header-bg: transparent;
+  --theme-btn-text: white;
+  --theme-border: #e0e0e0;
+  --theme-day-highlight: #0e9cd4;
+  --theme-day-text: white;
+  --theme-day-color: #ac8102;
+  --theme-dark-color: #b98c0e;
+  --theme-color: linear-gradient(135deg, #ff3344, #fde618);
+}
+
+/* Festive holiday glow overlay */
+html[data-active-theme="christmas"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, 
+    rgba(196, 30, 58, 0.03) 0%, 
+    rgba(22, 91, 51, 0.02) 70%,
+    transparent 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Festive accent stripe */
+html[data-active-theme="christmas"] body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, 
+    #c41e3a 0%, 
+    #c41e3a 33.33%, 
+    #f5f5f5 33.33%, 
+    #f5f5f5 66.66%, 
+    #165b33 66.66%, 
+    #165b33 100%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Festive card styling */
+html[data-active-theme="christmas"] .card {
+  border: 2px solid #c41e3a;
+  border-radius: 15px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 1) 0%, 
+    rgba(245, 255, 250, 0.98) 100%);
+  box-shadow: 0 20px 60px rgba(196, 30, 58, 0.12),
+              0 0 30px rgba(22, 91, 51, 0.08);
+}
+
+/* Festive button styling */
+html[data-active-theme="christmas"] .btn-primary {
+  background: linear-gradient(135deg, #c41e3a, #165b33);
+  color: white;
+  font-weight: 700;
+  border: 2px solid #ffd700;
+}
+
+html[data-active-theme="christmas"] .btn-primary:hover {
+  background: linear-gradient(135deg, #165b33, #c41e3a);
+  box-shadow: 0 10px 30px rgba(196, 30, 58, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Festive headers */
+html[data-active-theme="christmas"] .header,
+html[data-active-theme="christmas"] h1,
+html[data-active-theme="christmas"] .title {
+  color: #c41e3a;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(22, 91, 51, 0.2);
+}
+
+/* Form elements with festive styling */
+html[data-active-theme="christmas"] input:focus,
+html[data-active-theme="christmas"] textarea:focus,
+html[data-active-theme="christmas"] select:focus {
+  border-color: #c41e3a;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.15);
+  background: rgba(245, 255, 250, 0.3);
+}
+
+/* Christmas decorative particles */
+.christmas-particle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+/* Snowflakes */
+.christmas-particle.snowflake::before {
+  content: '❄️';
+}
+
+/* Christmas trees */
+.christmas-particle.tree::before {
+  content: '🎄';
+}
+
+/* Gifts and presents */
+.christmas-particle.gift::before {
+  content: '🎁';
+}
+
+/* Bells */
+.christmas-particle.bell::before {
+  content: '🔔';
+  color: #ffd700;
+}
+
+/* Candy cane */
+.christmas-particle.candy::before {
+  content: '🍭';
+}
+
+/* Falling snow animation */
+@keyframes christmasFall {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) translateX(var(--sway, 0)) rotate(360deg);
+  }
+}
+
+.christmas-particle {
+  animation: christmasFall 9s linear infinite;
+}
+
+/* Gentle sway for snowflakes */
+@keyframes christmasSway {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(30px);
+  }
+  75% {
+    transform: translateX(-30px);
+  }
+}
+
+.christmas-particle.sway {
+  animation: christmasFall 9s linear infinite, christmasSway 4s ease-in-out infinite;
+}
+
+/* Twinkling effect for lights/bells */
+@keyframes christmasTwinkle {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.christmas-particle.twinkle {
+  animation: christmasFall 9s linear infinite, christmasTwinkle 2s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .christmas-particle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .christmas-particle {
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,151 @@
+/**
+ * Thoranam Decoration Styles - MASTER FILE
+ * Central location for ALL thoranam customization
+ * Festival banner decorations (Pongal, Diwali, Christmas, etc.)
+ * 
+ * IMPORTANT: This is the ONLY file you need to edit for thoranam styling
+ * Do NOT edit decorations.css for thoranam - use this file only!
+ */
+
+/* ========== CONTAINER STYLING ========== */
+.thoranam-container {
+  width: calc(100% + 20px); /* Extend beyond viewport to avoid gaps */
+  height: 140px;
+  pointer-events: none;
+  overflow: hidden;
+  animation: thoranamFadeIn 0.8s ease-out;
+  background-position: top;
+  background-repeat: repeat-x;
+  background-size: contain;
+  box-sizing: border-box;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+/* ========== DECORATION WRAPPER (kept for backward compatibility) ========== */
+.thoranam-decoration {
+  display: none;
+}
+
+/* ========== FADE IN ANIMATION ========== */
+@keyframes thoranamFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== THEME-SPECIFIC CUSTOMIZATION ========== */
+
+/* Pongal Thoranam - Mango leaf decoration */
+html[data-active-theme="pongal"] .thoranam-container {
+  background-image: url('/themes/pongal/thoranam.svg');
+  filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.4));
+  opacity: 0.95;
+}
+
+/* Diwali Light Thoranam - Oil lamp decoration */
+html[data-active-theme="diwali"][data-theme-mode="light"] .thoranam-container {
+  background-image: url('/themes/diwali/thoranam.svg');
+  filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.5))
+          drop-shadow(0 0 15px rgba(255, 140, 0, 0.3));
+  opacity: 0.98;
+}
+
+/* Diwali Dark Thoranam - Oil lamp decoration on dark background */
+html[data-active-theme="diwali"][data-theme-mode="dark"] .thoranam-container {
+  background-image: url('/themes/diwali/thoranam.svg');
+  filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.6))
+          drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
+  opacity: 0.98;
+}
+
+/* Christmas Thoranam - Holly or snowflake decoration */
+html[data-active-theme="christmas"] .thoranam-container {
+  background-image: url('/themes/christmas/thoranam.svg');
+  filter: drop-shadow(0 2px 12px rgba(173, 216, 230, 0.4))
+          drop-shadow(0 0 15px rgba(220, 20, 60, 0.2));
+  opacity: 0.96;
+}
+
+/* New Year Thoranam */
+html[data-active-theme="newyear"] .thoranam-container {
+  background-image: url('/themes/newyear/thoranam.svg');
+  filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.3));
+  opacity: 0.95;
+}
+
+/* Republic Day Thoranam */
+html[data-active-theme="republic-day"] .thoranam-container {
+  background-image: url('/themes/republic-day/thoranam.svg');
+  filter: drop-shadow(0 2px 8px rgba(255, 153, 51, 0.3));
+  opacity: 0.95;
+}
+
+/* Independence Day Thoranam */
+html[data-active-theme="independence-day"] .thoranam-container {
+  background-image: url('/themes/independence-day/thoranam.svg');
+  filter: drop-shadow(0 2px 8px rgba(255, 127, 0, 0.3));
+  opacity: 0.95;
+}
+
+/* Ayudha Pujai Thoranam */
+html[data-active-theme="ayudha-pujai"] .thoranam-container {
+  background-image: url('/themes/ayudha-pujai/thoranam.svg');
+  filter: drop-shadow(0 2px 8px rgba(167, 25, 48, 0.3));
+  opacity: 0.95;
+}
+
+/* ========== VISIBILITY CONTROL ========== */
+/* Hide thoranam when no theme or default theme is active */
+html[data-active-theme="default"] .thoranam-container,
+html:not([data-active-theme]) .thoranam-container {
+  display: none !important;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 768px) {
+  .thoranam-container {
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .thoranam-container {
+    height: 60px;
+  }
+}
+
+/* ========== LIGHT/DARK MODE FALLBACK ========== */
+/* Light mode adaptations - used if theme doesn't specify */
+html[data-theme-mode="light"] .thoranam-container {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Dark mode adaptations - used if theme doesn't specify */
+html[data-theme-mode="dark"] .thoranam-container {
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.15));
+}
+
+/* Alternative position: bottom (if needed) */
+.thoranam-container.bottom {
+  top: auto;
+  bottom: 0;
+  flex-direction: column-reverse;
+}
+
+/* ========== CALENDAR PAGE PADDING FIX FOR FESTIVAL THEMES ========== */
+/* When festival theme is applied, set calendar body padding */
+html[data-active-theme="pongal"] body,
+html[data-active-theme="diwali"] body,
+html[data-active-theme="christmas"] body,
+html[data-active-theme="newyear"] body,
+html[data-active-theme="republic-day"] body,
+html[data-active-theme="independence-day"] body,
+html[data-active-theme="ayudha-pujai"] body {
+  padding: 10px !important;
+}

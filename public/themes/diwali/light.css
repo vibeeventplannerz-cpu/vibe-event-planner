@@ -1,0 +1,176 @@
+/**
+ * Diwali Festival Light Mode Theme
+ * Festival of Lights - Bright and Celebratory
+ * Colors: Gold, Orange, Warm Whites
+ * Features: Warm lighting, oil lamp vibes, radiant feel
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * To change colors, edit the CSS variables below:
+ * --theme-primary, --theme-bg-primary, --theme-text-primary, etc.
+ * All elements automatically update when you change these!
+ * ============================================================
+ */
+
+html[data-active-theme="diwali"][data-theme-mode="light"] {
+  --diwali-gold: #ffd700;
+  --diwali-orange: #ff8c00;
+  --diwali-warm: #fff8dc;
+  --diwali-glow: rgba(255, 215, 0, 0.4);
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #ff8c00;
+  --theme-primary-hover: #e67e00;
+  --theme-primary-active: #cc6600;
+  --theme-primary-light: rgba(255, 140, 0, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%);
+  --theme-card-bg: #fffef5;
+  --theme-text-primary: #d84315;
+  --theme-text-secondary: #333;
+  --theme-header-bg: transparent;
+  --theme-btn-text: white;
+  --theme-border: #ffd700;
+  --theme-day-highlight: #d40e60;
+  --theme-day-text: white;
+  --theme-day-color: #d16b0c;
+  --theme-dark-color: #e9801e;
+  --theme-color: linear-gradient(135deg, #ff3344, #fde618);
+}
+
+/* Warm golden glow atmosphere */
+html[data-active-theme="diwali"][data-theme-mode="light"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, 
+    rgba(255, 215, 0, 0.1) 0%, 
+    rgba(255, 140, 0, 0.04) 50%,
+    transparent 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Warm glow accent line */
+html[data-active-theme="diwali"][data-theme-mode="light"] body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    #ff8c00 0%, 
+    #ffd700 50%, 
+    #ff8c00 100%);
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 2px 20px rgba(255, 215, 0, 0.4);
+}
+
+/* Radiant card styling */
+html[data-active-theme="diwali"][data-theme-mode="light"] .card {
+  border: 2px solid #ffd700;
+  border-radius: 15px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 1) 0%, 
+    rgba(255, 248, 220, 0.98) 100%);
+  box-shadow: 0 20px 60px rgba(255, 215, 0, 0.15),
+              0 0 40px rgba(255, 215, 0, 0.08),
+              inset 0 0 20px rgba(255, 215, 0, 0.05);
+}
+
+/* Diwali buttons - warm and inviting */
+html[data-active-theme="diwali"][data-theme-mode="light"] .btn-primary {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #333;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+html[data-active-theme="diwali"][data-theme-mode="light"] .btn-primary:hover {
+  background: linear-gradient(135deg, #ff8c00, #ffd700);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Warm headers */
+html[data-active-theme="diwali"][data-theme-mode="light"] .header,
+html[data-active-theme="diwali"][data-theme-mode="light"] h1,
+html[data-active-theme="diwali"][data-theme-mode="light"] .title {
+  color: #ff6a00;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  font-weight: 700;
+}
+
+/* Light mode form elements */
+html[data-active-theme="diwali"][data-theme-mode="light"] input:focus,
+html[data-active-theme="diwali"][data-theme-mode="light"] textarea:focus,
+html[data-active-theme="diwali"][data-theme-mode="light"] select:focus {
+  border-color: #ffd700;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  background: rgba(255, 248, 220, 0.5);
+}
+
+/* Diwali light particles */
+.diwali-particle {
+  position: fixed;
+  pointer-events: none;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+/* Oil lamp particles */
+.diwali-particle.lamp::before {
+  content: '🪔';
+}
+
+/* Fireworks */
+.diwali-particle.fireworks::before {
+  content: '✨';
+}
+
+/* Light/Star */
+.diwali-particle.star::before {
+  content: '⭐';
+  color: #ffd700;
+}
+
+/* Flower garland */
+.diwali-particle.flower::before {
+  content: '🎊';
+}
+
+/* Gentle floating for light mode */
+@keyframes diwaliGlow {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(360deg);
+  }
+}
+
+.diwali-particle {
+  animation: diwaliGlow 10s linear infinite;
+}
+
+/* Responsive light mode */
+@media (max-width: 768px) {
+  .diwali-particle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .diwali-particle {
+    font-size: 0.9rem;
+  }
+}

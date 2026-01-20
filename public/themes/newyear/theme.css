@@ -1,0 +1,154 @@
+/**
+ * New Year Festival Theme
+ * Celebration of new beginnings
+ * Features: Gold accents, champagne colors, confetti-style particles
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * To change colors, edit the CSS variables below:
+ * --theme-primary, --theme-bg-primary, --theme-text-primary, etc.
+ * All elements automatically update when you change these!
+ * ============================================================
+ */
+
+html[data-active-theme="newyear"] {
+  --primary-accent: #ffd700;
+  --secondary-accent: #ffed4e;
+  --background-tint: rgba(255, 215, 0, 0.05);
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #b9a00ede;
+  --theme-primary-hover: #ffed4e;
+  --theme-primary-active: #ffc107;
+  --theme-primary-light: rgba(255, 215, 0, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #fffacd 0%, #ffffe0 100%);
+  --theme-card-bg: #fffef0;
+  --theme-text-primary: #b8860b;
+  --theme-text-secondary: #333; 
+  --theme-header-bg: transparent;
+  --theme-btn-text: white;
+  --theme-border: #daa520;
+  --theme-day-highlight: #af0261;
+  --theme-day-text: blue;
+  --theme-day-color: #cf4d01;
+  --theme-dark-color: #f19224;
+  --theme-color: linear-gradient(135deg, #ebdd1c, #fde618dc);
+}
+
+/* Subtle gold glow overlay */
+html[data-active-theme="newyear"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, 
+    rgba(255, 215, 0, 0.03) 0%, 
+    transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Enhance header with gold accent */
+html[data-active-theme="newyear"] .header,
+html[data-active-theme="newyear"] h1,
+html[data-active-theme="newyear"] .title {
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+/* Card styling for New Year */
+html[data-active-theme="newyear"] .card {
+  border-top: 3px solid #ffd700;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.98) 0%, 
+    rgba(255, 250, 240, 0.98) 100%);
+  box-shadow: 0 20px 60px rgba(255, 215, 0, 0.1),
+              0 0 30px rgba(255, 215, 0, 0.05);
+}
+
+/* Buttons get gold accent */
+html[data-active-theme="newyear"] .btn-primary {
+  background: #ffd700;
+  color: #333;
+  font-weight: 600;
+}
+
+html[data-active-theme="newyear"] .btn-primary:hover {
+  background: #ffed4e;
+  box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+}
+
+/* Input fields with gold border */
+html[data-active-theme="newyear"] input:focus,
+html[data-active-theme="newyear"] textarea:focus,
+html[data-active-theme="newyear"] select:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+/* Particle system for New Year */
+/* Create confetti-like particles */
+.newyear-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-particles);
+  pointer-events: none;
+}
+
+.newyear-particle {
+  position: fixed;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+/* Champagne glass unicode for particles */
+.newyear-particle.champagne::before {
+  content: '🥂';
+  font-size: 1.5rem;
+}
+
+/* Sparkle particles */
+.newyear-particle.sparkle::before {
+  content: '✨';
+  font-size: 1.2rem;
+}
+
+/* Party popper effect */
+.newyear-particle.popper::before {
+  content: '🎉';
+  font-size: 1.3rem;
+}
+
+/* Happy face particles */
+.newyear-particle.happy::before {
+  content: '😊';
+  font-size: 1.2rem;
+}
+
+/* Falling confetti animation */
+@keyframes newYearFall {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+.newyear-particle {
+  animation: newYearFall 8s linear infinite;
+}
+
+/* Responsive particles */
+@media (max-width: 768px) {
+  .newyear-particle {
+    font-size: 0.9rem !important;
+  }
+}

@@ -1,0 +1,199 @@
+/**
+ * Independence Day Festival Theme
+ * 15th August - National Freedom Day
+ * Colors: Tricolor (Orange, White, Green), Bold and Vibrant
+ * Features: Patriotic theme, fireworks effect, bold styling
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * To change colors, edit the CSS variables below:
+ * --theme-primary, --theme-bg-primary, --theme-text-primary, etc.
+ * All elements automatically update when you change these!
+ * ============================================================
+ */
+
+html[data-active-theme="independence-day"] {
+  --ind-orange: #ff7f00;
+  --ind-green: #00a651;
+  --ind-blue: #003366;
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #ff7f00;
+  --theme-primary-hover: #e67e00;
+  --theme-primary-active: #cc6600;
+  --theme-primary-light: rgba(255, 127, 0, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #fff5f0 0%, #fffbf7 100%);
+  --theme-card-bg: #fffbf8;
+  --theme-text-primary: #00a651;
+  --theme-text-secondary: #333;
+  --theme-header-bg: transparent;
+  --theme-btn-text: white;
+  --theme-border: #ff7f00;
+  --theme-day-highlight: #b534ff;
+  --theme-day-text: rgb(27, 48, 240);
+  --theme-day-color: #06b900;
+  --theme-dark-color: #15b300;
+  --theme-color: linear-gradient(135deg, #ff9933, #fffaf5, #138808);
+}
+
+/* Bold patriotic gradient overlay */
+html[data-active-theme="independence-day"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(255, 127, 0, 0.04) 0%, 
+    rgba(0, 166, 81, 0.04) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Bold tricolor accent line at top */
+html[data-active-theme="independence-day"] body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, 
+    #ff7f00 0%, 
+    #ff7f00 33.33%, 
+    #ffffff 33.33%, 
+    #ffffff 66.66%, 
+    #00a651 66.66%, 
+    #00a651 100%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Bold card styling for Independence Day */
+html[data-active-theme="independence-day"] .card {
+  border: 3px solid #ff7f00;
+  border-radius: 15px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 1) 0%, 
+    rgba(255, 250, 235, 1) 100%);
+  box-shadow: 0 25px 70px rgba(255, 127, 0, 0.15),
+              0 0 40px rgba(0, 166, 81, 0.08);
+}
+
+/* Bold button styling */
+html[data-active-theme="independence-day"] .btn-primary {
+  background: linear-gradient(135deg, #ff7f00, #00a651);
+  color: white;
+  font-weight: 700;
+  border: 3px solid white;
+  box-shadow: 0 4px 15px rgba(255, 127, 0, 0.35);
+}
+
+html[data-active-theme="independence-day"] .btn-primary:hover {
+  background: linear-gradient(135deg, #00a651, #ff7f00);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 127, 0, 0.45);
+}
+
+/* Bold headers */
+html[data-active-theme="independence-day"] .header,
+html[data-active-theme="independence-day"] h1,
+html[data-active-theme="independence-day"] .title {
+  color: #003366;
+  font-weight: 700;
+  text-shadow: 2px 2px 0px rgba(255, 127, 0, 0.25);
+}
+
+/* Form elements with patriotic styling */
+html[data-active-theme="independence-day"] input:focus,
+html[data-active-theme="independence-day"] textarea:focus,
+html[data-active-theme="independence-day"] select:focus {
+  border-color: #ff7f00;
+  border-width: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 127, 0, 0.2);
+  background: rgba(255, 250, 235, 0.5);
+}
+
+/* Independence Day fireworks particles */
+.independence-particle {
+  position: fixed;
+  pointer-events: none;
+  font-weight: bold;
+}
+
+/* Fireworks emoji */
+.independence-particle.fireworks::before {
+  content: '✨';
+  font-size: 1.4rem;
+}
+
+/* Flag particles */
+.independence-particle.flag::before {
+  content: '🇮🇳';
+  font-size: 1.5rem;
+}
+
+/* Taj Mahal */
+.independence-particle.taj::before {
+  content: '🕌';
+  font-size: 1.4rem;
+}
+
+/* Fire/Light particles */
+.independence-particle.light::before {
+  content: '🔆';
+  font-size: 1.3rem;
+}
+
+/* Exploding fireworks animation */
+@keyframes independenceExplode {
+  0% {
+    opacity: 1;
+    transform: translateY(var(--start-y, 0px)) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--end-y, 100vh)) scale(0);
+  }
+}
+
+.independence-particle {
+  animation: independenceExplode 7s ease-out infinite;
+}
+
+/* Burst effect for some particles */
+@keyframes independenceBurst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 0), var(--ty, 100vh)) scale(0.1);
+  }
+}
+
+.independence-particle.burst {
+  animation: independenceBurst 6s ease-out infinite;
+}
+
+/* Responsive particles */
+@media (max-width: 768px) {
+  .independence-particle {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .independence-particle {
+    font-size: 0.9rem !important;
+  }
+}

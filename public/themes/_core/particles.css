@@ -1,0 +1,122 @@
+/**
+ * Particle Animation System
+ * Reusable falling particle effects for festival themes
+ */
+
+/* Particle container - positioned above content */
+.particles-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-particles);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Individual particle styling */
+.particle {
+  position: fixed;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Slow falling animation - smooth and elegant */
+@keyframes fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+  }
+  
+  50% {
+    opacity: 1;
+  }
+  
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) translateX(var(--tx, 0px)) rotate(360deg);
+  }
+}
+
+/* Sway animation for gentle horizontal movement */
+@keyframes sway {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(var(--sway-amount, 30px));
+  }
+}
+
+/* Apply falling animation */
+.particle.falling {
+  animation: fall linear infinite;
+}
+
+/* Add sway effect */
+.particle.sway {
+  animation: fall linear infinite, sway 3s ease-in-out infinite;
+}
+
+/* Different size classes */
+.particle.size-small {
+  font-size: 0.8rem;
+}
+
+.particle.size-medium {
+  font-size: 1.2rem;
+}
+
+.particle.size-large {
+  font-size: 1.5rem;
+}
+
+/* Rotation speeds */
+.particle.slow-rotate {
+  animation: fall linear infinite;
+}
+
+.particle.fast-rotate {
+  animation: fall 0.7s linear infinite;
+}
+
+/* Twinkle effect for light-based particles */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.particle.twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+/* Responsive particle visibility */
+@media (max-width: 768px) {
+  .particles-container {
+    opacity: 0.8; /* Slightly reduce particles on mobile */
+  }
+  
+  .particle.size-large {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .particles-container {
+    opacity: 0.6; /* Further reduce on very small screens */
+  }
+  
+  .particle {
+    will-change: auto;
+  }
+  
+  .particle.size-medium,
+  .particle.size-large {
+    font-size: 0.8rem;
+  }
+}

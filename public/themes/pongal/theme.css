@@ -1,0 +1,183 @@
+/**
+ * Pongal Festival Theme
+ * Tamil harvest celebration - Colors: Gold, Turmeric Yellow, Green
+ * Features: Sugarcane colors, agricultural theme, thoranam decoration
+ * 
+ * ============================================================
+ * QUICK COLOR CUSTOMIZATION GUIDE
+ * ============================================================
+ * 
+ * To change any color, edit the CSS variables below:
+ * 
+ * Primary Color (buttons, links):
+ *   Change: --theme-primary: #d4af37;
+ * 
+ * Background Gradient:
+ *   Change: --theme-bg-primary: linear-gradient(135deg, #fffef0 0%, #fff9e6 100%);
+ * 
+ * Text Color:
+ *   Change: --theme-text-primary: #2d5016;
+ * 
+ * Card Background:
+ *   Change: --theme-card-bg: rgba(255, 250, 205, 0.98);
+ * 
+ * Border Color:
+ *   Change: --theme-border: #daa520;
+ * 
+ * All elements automatically update when you change these!
+ * No need to search through the entire CSS file.
+ * ============================================================
+ */
+
+html[data-active-theme="pongal"] {
+  --pongal-primary: #d4af37;
+  --pongal-secondary: #ffd700;
+  --pongal-accent: #2d5016;
+  --pongal-warm: #ff9500;
+  
+  /* Universal theme variables for overrides.css */
+  --theme-primary: #d4af37;
+  --theme-primary-hover: #b8941f;
+  --theme-primary-active: #9a7a19;
+  --theme-primary-light: rgba(212, 175, 55, 0.15);
+  --theme-bg-primary: linear-gradient(135deg, #fffef0 0%, #fff9e6 100%);
+  --theme-card-bg: #fffbf0;
+  --theme-text-primary: #2d5016;
+  --theme-text-secondary: #333;
+  --theme-header-bg: transparent;
+  --theme-btn-text: white;
+  --theme-border: #daa520;
+  --theme-day-highlight: #ce1a03;
+  --theme-day-text: white;
+  --theme-day-color: #ac8102;
+  --theme-dark-color: #b98c0e;
+  --theme-color: linear-gradient(135deg, #ff9933, #fde618);
+}
+
+/* Warm golden glow for Pongal atmosphere */
+html[data-active-theme="pongal"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, 
+    rgba(212, 175, 55, 0.04) 0%, 
+    transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Card styling for Pongal - earthy feel */
+html[data-active-theme="pongal"] .card {
+  border-left: 5px solid #d4af37;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.98) 0%, 
+    rgba(255, 248, 220, 0.98) 100%);
+  box-shadow: 0 20px 60px rgba(212, 175, 55, 0.12),
+              0 0 30px rgba(212, 175, 55, 0.05);
+}
+
+/* Headers with golden text shadow */
+html[data-active-theme="pongal"] .header,
+html[data-active-theme="pongal"] h1,
+html[data-active-theme="pongal"] .title {
+  text-shadow: 0 2px 10px rgba(212, 175, 55, 0.25);
+  color: #2d5016;
+}
+
+/* Pongal-themed buttons */
+html[data-active-theme="pongal"] .btn-primary {
+  background: linear-gradient(135deg, #d4af37, #ffd700);
+  color: #2d5016;
+  font-weight: 600;
+  border: none;
+}
+
+html[data-active-theme="pongal"] .btn-primary:hover {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
+  transform: translateY(-3px);
+}
+
+/* Form elements with agricultural border */
+html[data-active-theme="pongal"] input:focus,
+html[data-active-theme="pongal"] textarea:focus,
+html[data-active-theme="pongal"] select:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+  background: rgba(255, 250, 205, 0.3);
+}
+
+/* Pongal decorative particles */
+.pongal-particle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.3rem;
+}
+
+/* Sugarcane particles */
+.pongal-particle.sugarcane::before {
+  content: '🌾';
+}
+
+/* Rice particles */
+.pongal-particle.rice::before {
+  content: '🌾';
+  opacity: 0.8;
+}
+
+/* Sun particles for harvest */
+.pongal-particle.sun::before {
+  content: '☀️';
+}
+
+/* Falling particles for Pongal */
+@keyframes pongalFall {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) translateX(var(--offset, 50px)) rotate(360deg);
+  }
+}
+
+.pongal-particle {
+  animation: pongalFall 10s linear infinite;
+}
+
+/* Gentle sway for harvested feel */
+@keyframes pongalSway {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(20px);
+  }
+  75% {
+    transform: translateX(-20px);
+  }
+}
+
+.pongal-particle.sway {
+  animation: pongalFall 10s linear infinite, pongalSway 4s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pongal-particle {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pongal-particle {
+    font-size: 0.9rem;
+  }
+}

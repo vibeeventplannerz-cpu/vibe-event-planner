@@ -1,0 +1,560 @@
+/**
+ * Universal Theme Override Styles
+ * ONLY applies when a theme is actively selected (not default)
+ * This file ensures theme colors completely override default styles
+ * Uses !important to guarantee application
+ * 
+ * NOTE: Default website colors are preserved when no theme is active
+ */
+
+/* Only apply these overrides when a non-default theme is active */
+html[data-active-theme]:not([data-active-theme="default"]) {
+  background: var(--theme-bg-primary, white) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) body {
+  background: var(--theme-bg-primary, white) !important;
+  color: var(--theme-text-primary, #333) !important;
+}
+
+/* ========== HEADERS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .header {
+  background: var(--theme-header-bg, transparent) !important;
+  color: white !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .header,
+html[data-active-theme]:not([data-active-theme="default"]) .header h1,
+html[data-active-theme]:not([data-active-theme="default"]) h1,
+html[data-active-theme]:not([data-active-theme="default"]) h2,
+html[data-active-theme]:not([data-active-theme="default"]) h3,
+html[data-active-theme]:not([data-active-theme="default"]) .title {
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .header-buttons {
+  color: white !important;
+}
+
+/* ========== CARDS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .card {
+  background: var(--theme-card-bg, white) !important;
+  border-color: var(--theme-primary, #667eea) !important;
+  color: var(--theme-text-secondary, #333) !important;
+}
+
+/* ========== PRIMARY BUTTONS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .btn-primary {
+  background: var(--theme-primary, #667eea) !important;
+  color: var(--theme-btn-text, white) !important;
+  border-color: var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .btn-primary:hover {
+  background: var(--theme-primary-hover, #667eea) !important;
+  border-color: var(--theme-primary-hover, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .btn-primary:active {
+  background: var(--theme-primary-active, #667eea) !important;
+}
+
+/* ========== SUCCESS BUTTONS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .btn-success {
+  background: var(--theme-success, #28a745) !important;
+  color: white !important;
+  border-color: var(--theme-success, #28a745) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .btn-success:hover {
+  background: var(--theme-success-hover, #218838) !important;
+  border-color: var(--theme-success-hover, #218838) !important;
+}
+
+/* ========== DANGER BUTTONS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .btn-danger {
+  background: var(--theme-danger, #dc3545) !important;
+  color: white !important;
+  border-color: var(--theme-danger, #dc3545) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .btn-danger:hover {
+  background: var(--theme-danger-hover, #c82333) !important;
+  border-color: var(--theme-danger-hover, #c82333) !important;
+}
+
+/* ========== SECONDARY BUTTONS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .btn-secondary {
+  background: var(--theme-secondary, #6c757d) !important;
+  color: white !important;
+  border-color: var(--theme-secondary, #6c757d) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .btn-secondary:hover {
+  background: var(--theme-secondary-hover, #5a6268) !important;
+  border-color: var(--theme-secondary-hover, #5a6268) !important;
+}
+
+/* ========== FORM ELEMENTS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) input,
+html[data-active-theme]:not([data-active-theme="default"]) textarea,
+html[data-active-theme]:not([data-active-theme="default"]) select {
+  border-color: var(--theme-primary, #667eea) !important;
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) input:focus,
+html[data-active-theme]:not([data-active-theme="default"]) textarea:focus,
+html[data-active-theme]:not([data-active-theme="default"]) select:focus {
+  border-color: var(--theme-primary, #667eea) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--theme-primary-light, rgba(102, 126, 234, 0.15)) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) label {
+  color: var(--theme-primary, #667eea) !important;
+}
+
+/* ========== TABLES ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .event-table th {
+  background: var(--theme-primary, #667eea) !important;
+  color: white !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-table tr:hover {
+  background: var(--theme-primary-light, rgba(102, 126, 234, 0.1)) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-table td {
+  border-color: var(--theme-border, #e0e0e0) !important;
+}
+
+/* ========== ALERTS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .alert-success {
+  background: var(--theme-alert-success-bg, #d4edda) !important;
+  color: var(--theme-alert-success-text, #155724) !important;
+  border-color: var(--theme-alert-success-border, #c3e6cb) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .alert-error {
+  background: var(--theme-alert-error-bg, #f8d7da) !important;
+  color: var(--theme-alert-error-text, #721c24) !important;
+  border-color: var(--theme-alert-error-border, #f5c6cb) !important;
+}
+
+/* ========== LINKS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) a {
+  color: var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) a:hover {
+  color: var(--theme-primary-hover, #667eea) !important;
+}
+
+/* ========== MODAL/DIALOG OVERLAYS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .modal {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .modal-content {
+  background: var(--theme-card-bg, white) !important;
+  border-color: var(--theme-primary, #667eea) !important;
+}
+
+/* ========== SCROLLBAR ========== */
+html[data-active-theme]:not([data-active-theme="default"]) ::-webkit-scrollbar {
+  background: var(--theme-scrollbar-bg, #f1f1f1) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) ::-webkit-scrollbar-thumb {
+  background: var(--theme-primary, #667eea) !important;
+}
+
+/* ========== PLACEHOLDER TEXT ========== */
+html[data-active-theme]:not([data-active-theme="default"]) input::placeholder,
+html[data-active-theme]:not([data-active-theme="default"]) textarea::placeholder {
+  color: var(--theme-text-muted, #999) !important;
+}
+
+/* ========== CALENDAR SPECIFIC STYLES ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-card {
+  background: var(--theme-card-bg, white) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+  color: var(--theme-text-primary, #333) !important;
+}
+
+/* Special styling for Diwali dark theme - improve text visibility */
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card * {
+  color: #000000 !important;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card h1,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card h2,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card h3,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card h4,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card p,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card span,
+html[data-active-theme="diwali"][data-theme-mode="dark"] .calendar-card div {
+  color: #000000 !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header {
+  background: var(--theme-bg-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%)) !important;
+  color: white !important;
+  border-bottom: 3px solid var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header h2,
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header h1 {
+  color: white !important;
+  text-shadow: none !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header button {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header button:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-body {
+  background: white !important;
+}
+
+/* Calendar month/day styling */
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-day {
+  border-color: var(--theme-border, #e0e0e0) !important;
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-day.other-month {
+  color: var(--theme-text-muted, #999) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-day.today {
+  background: var(--theme-primary-light, rgba(102, 126, 234, 0.15)) !important;
+  border: 2px solid var(--theme-primary, #667eea) !important;
+  color: var(--theme-text-primary, #333) !important;
+  font-weight: 600 !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-day.selected {
+  background: var(--theme-primary, #667eea) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .weekday {
+  color: var(--theme-text-primary, #333) !important;
+  border-bottom: 2px solid var(--theme-primary, #667eea) !important;
+}
+html[data-active-theme]:not([data-active-theme="default"]) .event-card {
+  background: var(--theme-card-bg, white) !important;
+  border-color: var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-card:hover {
+  box-shadow: 0 10px 30px var(--theme-primary-light, rgba(102, 126, 234, 0.15)) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-title {
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-date,
+html[data-active-theme]:not([data-active-theme="default"]) .event-time,
+html[data-active-theme]:not([data-active-theme="default"]) .event-location {
+  color: var(--theme-text-secondary, #666) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-details {
+  color: var(--theme-text-secondary, #666) !important;
+}
+
+/* ========== HEADER & NAVIGATION ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .navbar {
+  background: var(--theme-header-bg, transparent) !important;
+  border-color: var(--theme-border, #e0e0e0) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .nav-item {
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .nav-item:hover {
+  color: var(--theme-primary, #667eea) !important;
+}
+
+/* ========== BADGE & TAGS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .badge {
+  background: var(--theme-primary, #667eea) !important;
+  color: white !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .tag {
+  background: var(--theme-primary-light, rgba(102, 126, 234, 0.15)) !important;
+  color: var(--theme-primary, #667eea) !important;
+  border-color: var(--theme-primary, #667eea) !important;
+}
+
+/* ========== DIVIDER & BORDERS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) hr,
+html[data-active-theme]:not([data-active-theme="default"]) .divider {
+  border-color: var(--theme-border, #e0e0e0) !important;
+}
+
+/* ========== TEXT HIGHLIGHTS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .highlight,
+html[data-active-theme]:not([data-active-theme="default"]) mark {
+  background: var(--theme-primary-light, rgba(102, 126, 234, 0.15)) !important;
+  color: var(--theme-text-primary, #333) !important;
+}
+
+/* ========== FORM VALIDATION ========== */
+html[data-active-theme]:not([data-active-theme="default"]) input.is-invalid,
+html[data-active-theme]:not([data-active-theme="default"]) textarea.is-invalid {
+  border-color: var(--theme-danger, #dc3545) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) input.is-valid,
+html[data-active-theme]:not([data-active-theme="default"]) textarea.is-valid {
+  border-color: var(--theme-success, #28a745) !important;
+}
+
+/* ========== EVENT LIST STYLING ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .month-navigation {
+  background: var(--theme-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%)) !important;
+  color: var(--theme-day-text, white) !important;
+}
+
+html[data-active-theme="newyear"]:not([data-active-theme="default"]) .month-navigation button {
+  background: rgba(255, 255, 255, 0.123) !important;
+  color: rgb(5, 3, 3) !important;
+  border: 1px solid rgba(29, 27, 27, 0.3) !important;
+}
+
+html[data-active-theme="republic-day"]:not([data-active-theme="default"]) .month-navigation button {
+  background: rgba(255, 255, 255, 0.123) !important;
+  color: rgb(5, 3, 3) !important;
+  border: 1px solid rgba(29, 27, 27, 0.3) !important;
+}
+
+html[data-active-theme="independence-day"]:not([data-active-theme="default"]) .month-navigation button {
+  background: rgba(255, 255, 255, 0.123) !important;
+  color: rgb(5, 3, 3) !important;
+  border: 1px solid rgba(29, 27, 27, 0.3) !important;
+}
+
+html[data-active-theme="diwali"]:not([data-active-theme="default"]) .month-navigation button {
+  background: rgba(255, 255, 255, 0.123) !important;
+  color: rgb(5, 3, 3) !important;
+  border: 1px solid rgba(29, 27, 27, 0.3) !important;
+}
+
+html[data-active-theme="republic-day"]:not([data-active-theme="default"]) .events-grid .event-image {
+  background: var(--theme-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%)) !important;
+  color: var(--theme-day-text, white) !important;
+}
+
+html[data-active-theme="independence-day"]:not([data-active-theme="default"]) .events-grid .event-image {
+  background: var(--theme-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%)) !important;
+  color: var(--theme-day-text, white) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-line {
+  border-left: 5px solid var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-item,
+html[data-active-theme]:not([data-active-theme="default"]) .event-card {
+  border-left: 4px solid var(--theme-primary, #667eea) !important;
+  background: var(--theme-card-bg, white) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .event-item:hover,
+html[data-active-theme]:not([data-active-theme="default"]) .event-card:hover {
+  box-shadow: 0 5px 20px var(--theme-primary-light, rgba(102, 126, 234, 0.2)) !important;
+  border-left-color: var(--theme-primary-hover, #667eea) !important;
+}
+
+/* Event expand/collapse icons */
+html[data-active-theme]:not([data-active-theme="default"]) .event-expand,
+html[data-active-theme]:not([data-active-theme="default"]) .expand-icon,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="expand"],
+html[data-active-theme]:not([data-active-theme="default"]) svg {
+  color: var(--theme-primary, #667eea) !important;
+  fill: var(--theme-primary, #667eea) !important;
+  stroke: var(--theme-primary, #667eea) !important;
+}
+
+/* Event section titles */
+html[data-active-theme]:not([data-active-theme="default"]) .event-details-title,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="details"] > h3,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="details"] > h4 {
+  color: var(--theme-primary, #667eea) !important;
+  font-weight: 600 !important;
+}
+
+/* Event metadata styling */
+html[data-active-theme]:not([data-active-theme="default"]) .event-time,
+html[data-active-theme]:not([data-active-theme="default"]) .event-location,
+html[data-active-theme]:not([data-active-theme="default"]) .event-attendees {
+  color: var(--theme-text-secondary, #666) !important;
+}
+
+/* ========== ICONS & SVG ========== */
+html[data-active-theme]:not([data-active-theme="default"]) i,
+html[data-active-theme]:not([data-active-theme="default"]) .fa,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="icon"] {
+  color: var(--theme-primary, #667eea) !important;
+}
+
+/* ========== UPLOAD BUTTON STYLING ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .upload-btn,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="upload"] {
+  background: var(--theme-primary, #667eea) !important;
+  color: white !important;
+  border-color: var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .upload-btn:hover {
+  background: var(--theme-primary-hover, #667eea) !important;
+}
+
+/* ========== FILE INPUT & CHOOSE FILES ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .choose-file-btn,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="choose"] {
+  background: var(--theme-primary, #667eea) !important;
+  color: white !important;
+  border: 2px solid var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .choose-file-btn:hover {
+  background: var(--theme-primary-hover, #667eea) !important;
+  border-color: var(--theme-primary-hover, #667eea) !important;
+}
+
+/* ========== PANEL & SECTION BACKGROUNDS ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .panel,
+html[data-active-theme]:not([data-active-theme="default"]) .section,
+html[data-active-theme]:not([data-active-theme="default"]) [class*="panel"],
+html[data-active-theme]:not([data-active-theme="default"]) [class*="section"] {
+  background: var(--theme-card-bg, white) !important;
+  border-color: var(--theme-border, #e0e0e0) !important;
+}
+
+/* ========== IMPORTANT: Make card bg distinct from body ========== */
+html[data-active-theme]:not([data-active-theme="default"]) body {
+  background: var(--theme-bg-primary, white) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .card,
+html[data-active-theme]:not([data-active-theme="default"]) .event-item,
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-card,
+html[data-active-theme]:not([data-active-theme="default"]) .event-card {
+  background: var(--theme-card-bg, white) !important;
+  opacity: 0.98 !important;
+}
+
+/* ========== CALENDAR SPECIFIC: Ensure Contrast ========== */
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-card {
+  background: var(--theme-card-bg, white) !important;
+  border: 2px solid var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header {
+  background: var(--theme-primary, #667eea) !important;
+  color: white !important;
+  border-bottom: 3px solid var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header h2,
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header h1,
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header button,
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header span {
+  color: white !important;
+  text-shadow: none !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header button {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-header button:hover {
+  background: rgba(255, 255, 255, 0.35) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .calendar-body {
+  background: white !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .day {
+  border-color: var(--theme-border, #e0e0e0) !important;
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .day.other-month {
+  color: var(--theme-text-muted, #ccc) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .day.today {
+  background: var(--theme-day-color, rgba(102, 126, 234, 0.15)) !important;
+  border: 4px solid var(--theme-dark-color, #667eea) !important;
+  color: var(--theme-btn-text, #333) !important;
+  font-weight: 600 !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .day.has-event {
+  background: var(--theme-color, #667eea) !important;
+  color: var(--theme-day-text, blue) !important;
+  font-weight: 700 !important;
+  border: 2px solid var(--theme-primary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .day.selected {
+  background: var(--theme-day-highlight, #667eea) !important;
+  color: white !important;
+  font-weight: 700 !important;
+  border: 2px solid var(--theme-secondary, #667eea) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) .weekday {
+  color: var(--theme-text-primary, #333) !important;
+  border-bottom: 2px solid var(--theme-primary, #667eea) !important;
+  font-weight: 600 !important;
+}
+
+/* ========== TEXT & CONTENT STYLING ========== */
+html[data-active-theme]:not([data-active-theme="default"]) strong,
+html[data-active-theme]:not([data-active-theme="default"]) b {
+  color: var(--theme-text-primary, #333) !important;
+}
+
+html[data-active-theme]:not([data-active-theme="default"]) p {
+  color: var(--theme-text-secondary, #666) !important;
+}
+
+/* ========== ACTIVE STATES ========== */
+html[data-active-theme]:not([data-active-theme="default"]) *:focus {
+  outline-color: var(--theme-primary, #667eea) !important;
+  box-shadow: 0 0 0 3px var(--theme-primary-light, rgba(102, 126, 234, 0.15)) !important;
+}
+
+/* ========== RESPONSIVE ADJUSTMENTS ========== */
+@media (max-width: 768px) {
+  html[data-active-theme]:not([data-active-theme="default"]) .calendar-header {
+    padding: 15px !important;
+  }
+
+  html[data-active-theme]:not([data-active-theme="default"]) .event-item {
+    margin-bottom: 10px !important;
+  }
+}

@@ -1,0 +1,127 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    🎨 QUICK COLOR CHANGE REFERENCE                             ║
+║                                                                                ║
+║  Want to change theme colors? Follow these 3 simple steps!                    ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+📁 STEP 1: OPEN THEME FILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Select the theme you want to change:
+
+  Pongal              → public/themes/pongal/theme.css
+  Diwali (Light)      → public/themes/diwali/light.css
+  Diwali (Dark)       → public/themes/diwali/dark.css
+  New Year            → public/themes/newyear/theme.css
+  Republic Day        → public/themes/republic-day/theme.css
+  Independence Day    → public/themes/independence-day/theme.css
+  Ayudha Pujai        → public/themes/ayudha-pujai/theme.css
+  Christmas           → public/themes/christmas/theme.css
+
+
+🎨 STEP 2: FIND CSS VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Look at the top of the file for this block:
+
+  html[data-active-theme="pongal"] {
+    --theme-primary: #d4af37;
+    --theme-bg-primary: linear-gradient(...);
+    --theme-text-primary: #2d5016;
+    --theme-card-bg: rgba(...);
+    --theme-border: #daa520;
+    ... more variables ...
+  }
+
+
+✏️ STEP 3: CHANGE THE COLORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Change the hex color values. Example:
+
+  BEFORE: --theme-primary: #d4af37;      (Gold)
+  AFTER:  --theme-primary: #FF6B35;      (Orange)
+
+  Save the file, and ALL buttons using --theme-primary turn orange!
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+WHAT EACH VARIABLE CONTROLS:
+
+  --theme-primary         → All primary buttons, links, active states
+  --theme-primary-hover   → Color when you hover over buttons
+  --theme-primary-active  → Color when you click buttons
+  --theme-primary-light   → Light background tints, selections
+  --theme-bg-primary      → Full page background (gradient or color)
+  --theme-card-bg         → Card and container backgrounds
+  --theme-text-primary    → Main text, headings
+  --theme-text-secondary  → Secondary text, descriptions
+  --theme-header-bg       → Header/nav background
+  --theme-btn-text        → Text inside buttons
+  --theme-border          → All borders throughout site
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🎯 COMMON COLORS - COPY & PASTE:
+
+  Reds:        #FF0000 (Pure Red)        #DC143C (Crimson)
+  Greens:      #00FF00 (Lime)            #228B22 (Forest Green)
+  Golds:       #FFD700 (Gold)            #FFC107 (Amber)
+  Blues:       #0066FF (Bright Blue)     #4169E1 (Royal Blue)
+  Purples:     #800080 (Purple)          #9370DB (Medium Purple)
+  Neutrals:    #FFFFFF (White)           #000000 (Black)     #808080 (Gray)
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🌈 GRADIENT EXAMPLE (For --theme-bg-primary):
+
+  Left-to-Right:   linear-gradient(90deg, #FF5733 0%, #FFC300 100%);
+  Diagonal:        linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  Radial:          radial-gradient(circle, #FF5733 0%, #000000 100%);
+  Three Colors:    linear-gradient(135deg, #FF5733 0%, #FFC300 50%, #28a745 100%);
+
+═════════════════════════════════════════════════════════════════════════════════
+
+⚠️  IMPORTANT NOTES:
+
+  ✓ ONLY change the color values (hex codes, rgba, gradients)
+  ✓ DO NOT change the variable names (like --theme-primary)
+  ✓ Save the file after changes
+  ✓ Hard refresh browser if colors don't update: Ctrl+Shift+R
+  ✓ Do NOT edit theme-overrides.css - it applies your variables automatically
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📍 WHAT UPDATES AUTOMATICALLY:
+
+  ✓ All buttons                    ✓ Calendar colors
+  ✓ Links and hover effects        ✓ Card backgrounds and borders
+  ✓ Form inputs                    ✓ Text colors
+  ✓ Badges and tags                ✓ Page background
+  ✓ Scrollbars                     ✓ Header styling
+  ✓ Event cards                    ✓ All UI elements
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🆘 TROUBLESHOOTING:
+
+  Problem: Colors not changing?
+  → Save file properly
+  → Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+  → Check hex code is valid (starts with #, has 6 characters)
+
+  Problem: Only some elements changed?
+  → Some pages have overrides - edit the right theme file
+
+  Problem: Broke something?
+  → Just undo your changes and reload
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📚 FULL GUIDE: See THEME_COLOR_GUIDE.md for detailed documentation
+
+═════════════════════════════════════════════════════════════════════════════════
+
+That's it! Simple 3-step system to change ANY color! 🎨✨
+

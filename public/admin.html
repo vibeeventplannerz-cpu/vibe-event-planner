@@ -30,6 +30,33 @@
   
   <title>Admin Panel</title>
 
+  <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
+  <script>
+    (function() {
+      try {
+        const stored = localStorage.getItem('VIBE_THEME_CONFIG');
+        if (stored) {
+          const config = JSON.parse(stored);
+          // Store in document for CSS to use
+          document.documentElement.setAttribute('data-active-theme', config.theme);
+          document.documentElement.setAttribute('data-theme-mode', config.mode);
+          console.log('[InstantLoader] Theme loaded from localStorage:', config.theme);
+        }
+      } catch (e) {
+        console.warn('[InstantLoader] Error loading theme:', e);
+      }
+    })();
+  </script>
+
+  <!-- Firebase Scripts (MUST be before firebase-config.js) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+
+  <!-- Festival Theme Engine (AFTER Firebase) -->
+  <script src="/themes/_core/theme-engine.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -217,6 +244,186 @@
       font-size: 0.85em;
     }
 
+    /* Festival Theme Selector Styles */
+    .theme-section {
+      margin-bottom: 30px;
+    }
+
+    .theme-cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .theme-card {
+      background: white;
+      border: 3px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 140px;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .theme-card.active {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .theme-card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    .theme-card-name {
+      font-weight: 600;
+      font-size: 0.9em;
+      word-break: break-word;
+    }
+
+    .theme-card.active .theme-card-name {
+      color: white;
+    }
+
+    .mode-selector {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .mode-selector.active {
+      display: block;
+    }
+
+    .mode-selector label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-right: 20px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .mode-selector input[type="radio"] {
+      cursor: pointer;
+    }
+
+    /* Theme list for mobile */
+    .theme-list-container {
+      display: none;
+    }
+
+    .theme-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-list-item:hover {
+      border-color: #667eea;
+      background: #f0f2ff;
+    }
+
+    .theme-list-item.active {
+      border-color: #667eea;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    }
+
+    .theme-list-item-name {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-weight: 500;
+    }
+
+    .theme-list-item-icon {
+      font-size: 2rem;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: #667eea;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+
+    @media (max-width: 768px) {
+      .theme-cards-container {
+        display: none;
+      }
+
+      .theme-list-container {
+        display: block;
+      }
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -309,6 +516,27 @@
 
     <div id="alertBox" class="alert"></div>
 
+    <!-- Festival Theme Selector Section -->
+    <div class="card theme-section">
+      <h2 style="color: #667eea; margin-bottom: 20px;">🎉 Festival Theme</h2>
+      
+      <!-- Desktop: Card Layout -->
+      <div class="theme-cards-container" id="themeCardsContainer"></div>
+      
+      <!-- Mobile: List Layout -->
+      <div class="theme-list-container" id="themeListContainer"></div>
+      
+      <!-- Diwali Mode Selector -->
+      <div class="mode-selector" id="modeSelector">
+        <label>
+          <input type="radio" name="diwali-mode" value="light" checked> 💡 Light Mode
+        </label>
+        <label>
+          <input type="radio" name="diwali-mode" value="dark"> 🌙 Dark Mode
+        </label>
+      </div>
+    </div>
+
     <div class="card">
       <h2 style="color: #667eea; margin-bottom: 20px;">Manage Events</h2>
       <div id="loading" class="loading">Loading events...</div>
@@ -343,7 +571,20 @@
         
         <div class="form-group">
           <label for="eventName">Event Name *</label>
-          <input type="text" id="eventName" required placeholder="e.g., Birthday Party">
+          <input type="text" id="eventName" list="eventNameSuggestions" required placeholder="e.g., Birthday Party">
+          <datalist id="eventNameSuggestions">
+            <option value="Birthday">
+            <option value="DJ">
+            <option value="Wedding">
+            <option value="Reception">
+            <option value="Puberty Function">
+            <option value="Surprice Event">
+            <option value="Conference Event">
+            <option value="Shop Event">
+            <option value="Festival Celebration">
+            <option value="Product Launch">
+            <option value="Charity Event">
+          </datalist>
         </div>
 
         <div class="form-group">
@@ -395,7 +636,7 @@
 
   <script>
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcbDoB5_wCm1vI9FQx3WbxM532uCpyAw4F6YdwdUnksy3C890pbXVFAt2ZTBNAO6A/exec';
+    // No backend SCRIPT_URL needed - using local active-theme.json approach
 
     // Admin Authentication Check
     window.addEventListener('load', function() {
@@ -432,36 +673,10 @@
               loadEvents();
             })
             .getWebAppUrl();
-        } else if (SCRIPT_URL && typeof SCRIPT_URL === 'string' && SCRIPT_URL.trim() !== '') {
-          // Accept any non-empty SCRIPT_URL as a valid backend URL
-          webAppUrl = SCRIPT_URL;
-          loadEvents();
         } else {
-          // No backend configured - show message and keep demo data
-          document.getElementById('loading').innerText = 'No backend configured.';
+          // No backend configured - using local active-theme.json approach
+          loadEvents();
         }
-    }
-
-    // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
-    function postToScript(payload) {
-      const idToken = localStorage.getItem('googleToken') || '';
-      const userEmail = localStorage.getItem('userEmail') || '';
-      const body = Object.assign({}, payload, { id_token: idToken, userEmail: userEmail });
-      const url = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : (SCRIPT_URL || '');
-      const params = new URLSearchParams();
-      for (const k in body) {
-        if (body[k] === undefined || body[k] === null) continue;
-        params.append(k, typeof body[k] === 'object' ? JSON.stringify(body[k]) : body[k]);
-      }
-      console.log('Admin postToScript:', { action: payload.action, userEmail: userEmail, url: url });
-      return fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString()
-      }).then(r => {
-        if (!r.ok) console.error('postToScript HTTP error:', r.status);
-        return r.json();
-      });
     }
 
     function loadEvents() {
@@ -480,45 +695,10 @@
         return;
       }
 
-      // Fallback to fetch API (REST endpoint)
-      const userEmail = localStorage.getItem('userEmail') || '';
-      if (SCRIPT_URL) {
-        console.log('Admin: Fetching events from', SCRIPT_URL);
-        fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
-          .then(r => {
-            if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            return r.json();
-          })
-          .then(data => {
-            console.log('Admin: Events response', data);
-            if (data && data.success && data.events) {
-              allEvents = data.events;
-              displayEvents(allEvents);
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('eventsTable').style.display = 'block';
-            } else if (data && Array.isArray(data)) {
-              allEvents = data;
-              displayEvents(allEvents);
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('eventsTable').style.display = 'block';
-            } else if (data && data.events && Array.isArray(data.events)) {
-              allEvents = data.events;
-              displayEvents(allEvents);
-              document.getElementById('loading').style.display = 'none';
-              document.getElementById('eventsTable').style.display = 'block';
-            } else {
-              document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">No events found or invalid response format</div>';
-              console.warn('Unexpected data format:', data);
-            }
-          })
-          .catch(err => {
-            console.error('Admin: Error loading events:', err);
-            document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Error loading events: ' + err.message + '</div>';
-          });
-      } else {
-        console.warn('Admin: No SCRIPT_URL configured');
-        document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">No backend configured</div>';
-      }
+      // Local-only mode: No backend fetch needed for theme functionality
+      console.log('Admin: Running in local mode with active-theme.json');
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('eventsTable').style.display = 'block';
     }
 
     function displayEvents(events) {
@@ -793,6 +973,257 @@
       }
     }
     // Initialize app (called after admin verification inside load handler)
+
+    // ========== FESTIVAL THEME MANAGEMENT ==========
+    const FESTIVAL_THEMES = [
+      { id: 'default', name: 'Default', icon: '✨', hasModes: false },
+      { id: 'newyear', name: 'New Year', icon: '🥂', hasModes: false },
+      { id: 'pongal', name: 'Pongal', icon: '🌾', hasModes: false },
+      { id: 'republic-day', name: 'Republic Day', icon: '🇮🇳', hasModes: false },
+      { id: 'independence-day', name: 'Independence', icon: '🇮🇳', hasModes: false },
+      { id: 'ayudha-pujai', name: 'Ayudha Pujai', icon: '⚔️', hasModes: false },
+      { id: 'diwali', name: 'Diwali', icon: '🪔', hasModes: true },
+      { id: 'christmas', name: 'Christmas', icon: '🎄', hasModes: false }
+    ];
+
+    /**
+     * Initialize festival theme selector
+     */
+    function initThemeSelector() {
+      loadCurrentTheme().then(config => {
+        renderThemeCards(config);
+        renderThemeList(config);
+        setupThemeSelectorListeners();
+      });
+    }
+
+    /**
+     * Load current theme configuration from localStorage
+     */
+    async function loadCurrentTheme() {
+      try {
+        // Try localStorage first (set by saveTheme function)
+        const storedConfig = localStorage.getItem('VIBE_THEME_CONFIG');
+        if (storedConfig) {
+          const config = JSON.parse(storedConfig);
+          console.log('Loaded current theme from localStorage:', config);
+          return config;
+        }
+      } catch (error) {
+        console.warn('Failed to load from localStorage:', error);
+      }
+      
+      // Fallback to default if localStorage is empty
+      return { theme: 'default', mode: 'light' };
+    }
+
+    /**
+     * Render theme cards for desktop view
+     */
+    function renderThemeCards(config) {
+      const container = document.getElementById('themeCardsContainer');
+      container.innerHTML = FESTIVAL_THEMES.map(theme => `
+        <div class="theme-card ${theme.id === config.theme ? 'active' : ''}" 
+             data-theme-id="${theme.id}">
+          <div class="theme-card-icon">${theme.icon}</div>
+          <div class="theme-card-name">${theme.name}</div>
+        </div>
+      `).join('');
+      
+      // Update mode selector visibility and state after a short delay to allow DOM to update
+      setTimeout(() => {
+        const modeSelector = document.getElementById('modeSelector');
+        if (config.theme === 'diwali') {
+          modeSelector.classList.add('active');
+          // Update radio buttons to match current mode
+          const lightRadio = document.querySelector('input[name="diwali-mode"][value="light"]');
+          const darkRadio = document.querySelector('input[name="diwali-mode"][value="dark"]');
+          if (lightRadio && darkRadio) {
+            if (config.mode === 'dark') {
+              darkRadio.checked = true;
+              lightRadio.checked = false;
+            } else {
+              lightRadio.checked = true;
+              darkRadio.checked = false;
+            }
+          }
+        } else {
+          modeSelector.classList.remove('active');
+        }
+      }, 0);
+    }
+
+    /**
+     * Render theme list for mobile view
+     */
+    function renderThemeList(config) {
+      const container = document.getElementById('themeListContainer');
+      container.innerHTML = FESTIVAL_THEMES.map(theme => `
+        <div class="theme-list-item ${theme.id === config.theme ? 'active' : ''}" 
+             data-theme-id="${theme.id}">
+          <div class="theme-list-item-name">
+            <span class="theme-list-item-icon">${theme.icon}</span>
+            <span>${theme.name}</span>
+          </div>
+          <div class="theme-toggle">
+            <label class="toggle-switch">
+              <input type="checkbox" ${theme.id === config.theme ? 'checked' : ''} style="cursor: pointer;">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /**
+     * Setup theme selector event listeners
+     */
+    function setupThemeSelectorListeners() {
+      // Desktop theme cards
+      document.querySelectorAll('.theme-card').forEach(card => {
+        card.addEventListener('click', async function() {
+          const themeId = this.getAttribute('data-theme-id');
+          
+          // Get selected mode (for Diwali)
+          let selectedMode = 'light';
+          if (themeId === 'diwali') {
+            const selectedRadio = document.querySelector('input[name="diwali-mode"]:checked');
+            selectedMode = selectedRadio ? selectedRadio.value : 'light';
+          }
+          
+          // Save theme
+          await saveTheme(themeId, selectedMode);
+          
+          // Reload UI completely
+          const config = await loadCurrentTheme();
+          renderThemeCards(config);
+          renderThemeList(config);
+          setupThemeSelectorListeners();
+        });
+      });
+
+      // Mobile theme list toggles
+      document.querySelectorAll('.theme-list-item').forEach(item => {
+        const toggle = item.querySelector('input[type="checkbox"]');
+        
+        toggle.addEventListener('change', async function() {
+          const themeId = item.getAttribute('data-theme-id');
+          
+          if (this.checked) {
+            // Theme turned ON
+            let mode = 'light';
+            
+            if (themeId === 'diwali') {
+              const modeRadio = item.querySelector('input[name="diwali-mode-mobile"]:checked');
+              mode = modeRadio?.value || 'light';
+            }
+            
+            await saveTheme(themeId, mode);
+          } else {
+            // Theme turned OFF - switch to default
+            await saveTheme('default', 'light');
+          }
+          
+          // Reload UI completely
+          const config = await loadCurrentTheme();
+          renderThemeCards(config);
+          renderThemeList(config);
+          setupThemeSelectorListeners();
+        });
+      });
+
+      // Diwali mode selector (desktop)
+      document.querySelectorAll('input[name="diwali-mode"]').forEach(radio => {
+        radio.addEventListener('change', async function() {
+          const mode = this.value;
+          const config = await loadCurrentTheme();
+          
+          if (config.theme === 'diwali') {
+            // Save and reload UI
+            await saveTheme('diwali', mode);
+            const updatedConfig = await loadCurrentTheme();
+            renderThemeCards(updatedConfig);
+            renderThemeList(updatedConfig);
+            setupThemeSelectorListeners();
+          }
+        });
+      });
+    }
+
+    /**
+     * Save theme configuration to Firebase + broadcast to all users
+     * 
+     * How it works:
+     * 1. Save to Firebase → Updates /active-theme
+     * 2. Firebase broadcasts to all listening pages → Real-time! 📡
+     * 3. All pages update their localStorage → Fast next load! ⚡
+     * 4. Users see instant theme change
+     */
+    async function saveTheme(themeId, mode = 'light') {
+      try {
+        const config = {
+          theme: themeId,
+          mode: mode,
+          timestamp: new Date().toISOString(),
+          changedBy: localStorage.getItem('userEmail') || 'admin'
+        };
+
+        console.log('📤 Saving theme to Firebase...', config);
+
+        // FIRST: Update localStorage immediately so UI reflects the change
+        localStorage.setItem('VIBE_THEME_CONFIG', JSON.stringify(config));
+        console.log('💾 Updated localStorage with new theme');
+
+        // Write to Firebase Realtime Database
+        const db = window.firebaseDB;
+        if (!db) {
+          console.error('✗ Firebase not initialized');
+          showAlert('Firebase not connected. Add firebase-config.js to your HTML.', 'error');
+          return false;
+        }
+
+        // Write to /active-theme in Firebase
+        await db.ref('active-theme').set(config);
+        console.log('✓ Theme saved to Firebase!');
+        console.log('📡 Broadcasting to all users...');
+        console.log('⚡ All pages will update localStorage for fast load');
+        console.log('🔥 Real-time theme update complete!');
+
+        // Apply theme to admin page immediately
+        let attempts = 0;
+        while (!window.ThemeEngine && attempts < 10) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          attempts++;
+        }
+
+        if (window.ThemeEngine) {
+          console.log('✓ Applying theme to admin page...');
+          const result = await window.ThemeEngine.setTheme(themeId, mode);
+          console.log('✓ Theme applied successfully!');
+        } else {
+          console.error('✗ window.ThemeEngine is not available!');
+        }
+
+        // Broadcast event for any local listeners
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: config }));
+
+        return true;
+      } catch (error) {
+        console.error('✗ Error saving theme:', error);
+        showAlert('Error saving theme: ' + error.message, 'error');
+        return false;
+      }
+    }
+
+    // Initialize theme selector when admin panel loads
+    document.addEventListener('DOMContentLoaded', function() {
+      initThemeSelector();
+    });
+    
+    // Also initialize if DOM is already loaded
+    if (document.readyState !== 'loading') {
+      initThemeSelector();
+    }
 
     function logoutUser() {
       try {
