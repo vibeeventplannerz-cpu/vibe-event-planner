@@ -636,13 +636,36 @@
 
   <script>
 
+    // Backend configuration
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLhBp0SONqnnzDdEQZUDOp4B4O8iNr_HPqMkAaZQVHBI1TsBkhrGlwoEolvQKfLtX7/exec';
+    let userEmail = ''; // Global variable to store user email
+
+    // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
+    function postToScript(payload) {
+      const idToken = localStorage.getItem('googleToken') || '';
+      const body = Object.assign({}, payload, { id_token: idToken });
+      const params = new URLSearchParams();
+      for (const k in body) {
+        if (body[k] === undefined || body[k] === null) continue;
+        params.append(k, typeof body[k] === 'object' ? JSON.stringify(body[k]) : body[k]);
+      }
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      }).then(r => {
+        if (!r.ok) console.error('postToScript HTTP error:', r.status);
+        return r.json();
+      });
+    }
+
     // No backend SCRIPT_URL needed - using local active-theme.json approach
 
     // Admin Authentication Check
     window.addEventListener('load', function() {
       const isAuthenticated = localStorage.getItem('isAuthenticated');
       const isAdmin = localStorage.getItem('isAdmin');
-      const userEmail = localStorage.getItem('userEmail');
+      userEmail = localStorage.getItem('userEmail'); // Set global variable
       
       if (!isAuthenticated || !userEmail) {
         alert('Please login first');
@@ -680,25 +703,67 @@
     }
 
     function loadEvents() {
+      console.log('loadEvents called, userEmail:', userEmail);
+      
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        console.log('Using google.script.run');
         google.script.run
           .withSuccessHandler(function(events) {
+            console.log('Google Script events received:', events);
             allEvents = events || [];
             displayEvents(allEvents);
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('eventsTable').style.display = 'block';
+            const loading = document.getElementById('loading');
+            const table = document.getElementById('eventsTable');
+            if (loading) loading.style.display = 'none';
+            if (table) table.style.display = 'block';
           })
           .withFailureHandler(function(error) {
-            document.getElementById('loading').innerHTML = '<div style="color: #dc3545;">Error loading events: ' + error.message + '</div>';
+            console.error('Google Script error:', error);
+            const loading = document.getElementById('loading');
+            if (loading) loading.innerHTML = '<div style="color: #dc3545;">Error loading events: ' + (error.message || error) + '</div>';
           })
           .getEvents();
         return;
       }
 
-      // Local-only mode: No backend fetch needed for theme functionality
-      console.log('Admin: Running in local mode with active-theme.json');
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('eventsTable').style.display = 'block';
+      // Fallback: REST API (for Netlify static deployment)
+      console.log('Admin: Loading events via REST API, SCRIPT_URL:', SCRIPT_URL);
+      
+      if (!userEmail) {
+        console.error('userEmail not set!');
+        const loading = document.getElementById('loading');
+        if (loading) loading.innerHTML = '<div style="color: #dc3545;">Error: User email not found</div>';
+        return;
+      }
+      
+      fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
+        .then(r => {
+          console.log('Fetch response status:', r.status);
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .then(data => {
+          console.log('Events API response:', data);
+          if (data && data.success && data.events && Array.isArray(data.events)) {
+            allEvents = data.events || [];
+            displayEvents(allEvents);
+          } else if (data && Array.isArray(data)) {
+            // Handle direct array response
+            allEvents = data;
+            displayEvents(allEvents);
+          } else {
+            throw new Error(data && data.message ? data.message : 'Failed to load events');
+          }
+          const loading = document.getElementById('loading');
+          const table = document.getElementById('eventsTable');
+          if (loading) loading.style.display = 'none';
+          if (table) table.style.display = 'block';
+        })
+        .catch(err => {
+          console.error('Admin loadEvents error:', err);
+          const loading = document.getElementById('loading');
+          if (loading) loading.innerHTML = '<div style="color: #dc3545;">Error loading events: ' + (err.message || err) + '</div>';
+        });
     }
 
     function displayEvents(events) {

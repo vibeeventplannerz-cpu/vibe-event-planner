@@ -600,62 +600,62 @@
       
       
       .event-card {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    margin-bottom: 15px;
-    min-height: 100px;
-  }
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        margin-bottom: 15px;
+        min-height: 100px;
+      }
   
-  .event-image {
-    display: none !important;
-  }
+      .event-image {
+        display: none !important;
+      }
   
-  .event-content {
-    flex: 1;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-  }
+      .event-content {
+        flex: 1;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+      }
   
-  .event-title {
-    font-size: 1.1em;
-    margin-bottom: 8px;
-  }
+      .event-title {
+        font-size: 1.1em;
+        margin-bottom: 8px;
+      }
   
-  .event-meta {
-    display: flex !important;
-    flex: 1;
-  }
+      .event-meta {
+        display: flex !important;
+        flex: 1;
+      }
   
-  .event-actions {
-    border-top: none;
-    padding-top: 0;
-    margin-top: auto;
-    display: flex;
-    justify-content: flex-end;
-  }
+      .event-actions {
+        border-top: none;
+        padding-top: 0;
+        margin-top: auto;
+        display: flex;
+        justify-content: flex-end;
+      }
 
-  .event-actions-mob {
-    border-top: none;
-    padding-top: 10px;
-    margin-left: auto;
-  }
+      .event-actions-mob {
+        border-top: none;
+        padding-top: 10px;
+        margin-left: auto;
+      }
   
-  .btn-edit {
-    width: auto;
-    padding: 8px 16px;
-    font-size: 0.9em;
-  }
+      .btn-edit {
+        width: auto;
+        padding: 8px 16px;
+        font-size: 0.9em;
+      }
 
   
-  .event-description {
-    display: none;
-  }
+      .event-description {
+        display: none;
+      }
 
-  .expand-icon {
-    display: none !important;
-  }
+      .expand-icon {
+        display: none !important;
+      }
       
       .modal-content {
         margin: 20px auto;
@@ -702,6 +702,10 @@
       #logoutBtn {
         display: none;
       }
+
+      #event-edit-desktop {
+        display: none;
+      }
     }
     
     @media (max-width: 480px) {
@@ -719,9 +723,6 @@
       
       .event-title {
         font-size: 1.1em;
-      }
-      #event-edit-desktop {
-        display: none;
       }
     }
     
@@ -877,7 +878,9 @@
     // TIER 1: Owner override list (same as calendar.html)
     const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
     
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNQVY4TTJznIn8g1npTyQG9EAhYb9qxKa38E5_4VbCCyQgaZn3bJDWN5g-sAsMK3xd/exec'; // ✅ Backend URL configured
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLhBp0SONqnnzDdEQZUDOp4B4O8iNr_HPqMkAaZQVHBI1TsBkhrGlwoEolvQKfLtX7/exec'; // ✅ Backend URL configured
+
+    let userEmail = ''; // Global variable for user email
 
     // Authentication Check
     window.addEventListener('load', function() {
@@ -885,7 +888,7 @@
       // comment out the redirect below. Currently we do not force a redirect
       // here (admin-only checks belong in admin.html).
       const isAuthenticated = localStorage.getItem('isAuthenticated');
-      const userEmail = localStorage.getItem('userEmail');
+      userEmail = localStorage.getItem('userEmail');
 
       if (!isAuthenticated || !userEmail) {
         // Not authenticated — continue as anonymous (no redirect).
@@ -1033,26 +1036,29 @@
         const apiUrl = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : SCRIPT_URL;
         log('Using Fetch API with URL:', apiUrl);
         const userEmail = localStorage.getItem('userEmail');
+        
         fetch(`${apiUrl}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
           .then(response => {
+            log('Events API response status:', response.status);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             return response.json();
           })
           .then(data => {
-            log('Events data received', data);
-            if (data && data.success && data.events) {
+            log('Events data received:', data);
+            if (data && data.success && data.events && Array.isArray(data.events)) {
               handleEventsSuccess(data.events);
-            } else if (data && Array.isArray(data)) {
-              // Handle direct array response
-              handleEventsSuccess(data);
             } else if (data && data.events && Array.isArray(data.events)) {
               handleEventsSuccess(data.events);
+            } else if (Array.isArray(data)) {
+              // Handle direct array response
+              handleEventsSuccess(data);
             } else {
-              throw new Error(data && (data.error || data.message) ? (data.error || data.message) : 'Failed to load events');
+              const errMsg = (data && data.message) ? data.message : (data && data.error ? data.error : 'Failed to load events');
+              throw new Error(errMsg);
             }
           })
           .catch(error => {
-            log('Fetch error', error);
+            log('Fetch error:', error.message || error);
             handleEventsError(error);
           });
       }

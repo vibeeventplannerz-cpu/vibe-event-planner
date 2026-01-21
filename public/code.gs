@@ -2,8 +2,8 @@
 const SHEET_NAME = 'Sheet1';
 const ADMIN_SHEET_NAME = 'Admins';
 const ARCHIVE_SHEET_NAME = 'Archive';
-const USERS_SHEET_NAME = 'Users';
-const MANUAL_LOGIN_SHEET_NAME = 'ManualLogin';
+const USERS_SHEET_NAME = 'Google-Users';
+const MANUAL_LOGIN_SHEET_NAME = 'Manual-Login';
 const FALLBACK_ADMIN = 'hn6160324@gmail.com';
 
 // ==================== USER TRACKING ====================
@@ -38,10 +38,10 @@ function storeUserEmail(email) {
       }
     }
 
-    // Add new email with timestamp
-    const timestamp = new Date().toISOString();
-    usersSheet.appendRow([emailLower, timestamp]);
-    Logger.log('New user email stored:', emailLower, timestamp);
+    // Add new email with IST timestamp (UTC+5:30)
+    const istTime = new Date(new Date().getTime() + 5.5 * 60 * 60 * 1000).toISOString().replace('Z', '') + ' IST';
+    usersSheet.appendRow([emailLower, istTime]);
+    Logger.log('New user email stored:', emailLower, istTime);
 
     return { success: true, message: 'User email stored', isNew: true };
   } catch (error) {
@@ -126,6 +126,7 @@ function validateManualLogin(email, password) {
   }
 }
 
+// ==================== CORS CONFIGURATION ====================
 function doGet(e) {
   const page = e.parameter.page || 'calendar';
   const action = e.parameter.action;
@@ -140,7 +141,7 @@ function doGet(e) {
     Logger.log('Archive error (non-critical):', archiveErr);
   }
 
-  // Handle API requests from Netlify
+  // Handle API requests from Netlify (with CORS headers)
   if (action === 'checkAdmin' && email) {
     return handleAdminCheck(email);
   }
@@ -628,6 +629,27 @@ function getEvents() {
   } catch (error) {
     Logger.log('Error in getEvents:', error.toString());
     throw new Error('Failed to load events: ' + error.message);
+  }
+}
+
+// ==================== TEST FUNCTION ====================
+// இந்த function run பண்ணி test பண்ணுங்க
+function testGetEvents() {
+  try {
+    const events = getEvents();
+    Logger.log('Test Result - Total Events:', events.length);
+    
+    if (events.length > 0) {
+      Logger.log('First Event:', JSON.stringify(events[0]));
+      Logger.log('✅ SUCCESS - Events loaded successfully!');
+    } else {
+      Logger.log('⚠️ WARNING - No events found. Check your sheet data.');
+    }
+    
+    return events;
+  } catch (error) {
+    Logger.log('❌ ERROR:', error.toString());
+    return null;
   }
 }
 
@@ -1429,8 +1451,5 @@ function doPost(e) {
 
 function jsonResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON)
-    .addHeader('Access-Control-Allow-Origin', '*')
-    .addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    .addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    .setMimeType(ContentService.MimeType.JSON);
 }

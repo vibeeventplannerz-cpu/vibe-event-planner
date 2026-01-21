@@ -22,6 +22,15 @@
   
   <title>Vibe Event Planner'Z - Login</title>
 
+  <!-- INSTANT AUTH CHECK - Redirect if already logged in (no login page flash) -->
+  <script>
+    (function() {
+      if (localStorage.getItem('isAuthenticated') === 'true') {
+        window.location.replace('/calendar.html');
+      }
+    })();
+  </script>
+
   <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
   <script>
     (function() {
@@ -413,7 +422,7 @@
 
   <script>
     // Configuration
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNQVY4TTJznIn8g1npTyQG9EAhYb9qxKa38E5_4VbCCyQgaZn3bJDWN5g-sAsMK3xd/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLhBp0SONqnnzDdEQZUDOp4B4O8iNr_HPqMkAaZQVHBI1TsBkhrGlwoEolvQKfLtX7/exec';
 
     // Google Identity state
     let isGoogleInitialized = false;
@@ -513,14 +522,29 @@
 
     async function checkAdminStatus(email) {
       try {
+        // TIER 1: Check if email is in ADMIN_OVERRIDE_EMAILS (owner)
+        const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
+        const emailLower = (email || '').toLowerCase();
+        const adminOverridesLower = ADMIN_OVERRIDE_EMAILS.map(e => (e || '').toLowerCase());
+        const isOwnerOverride = adminOverridesLower.indexOf(emailLower) !== -1;
+        
+        if (isOwnerOverride) {
+          console.log('✅ User is in ADMIN_OVERRIDE_EMAILS (TIER 1 - Owner)');
+          localStorage.setItem('isAdmin', 'true');
+          window.location.href = '/calendar.html';
+          return;
+        }
+        
+        // TIER 2: Check if email is in Admins sheet (sheet admin)
         const response = await fetch(`${SCRIPT_URL}?action=checkAdmin&email=${encodeURIComponent(email)}`);
         const data = await response.json();
 
-        localStorage.setItem('isAdmin', data.isAdmin);
+        localStorage.setItem('isAdmin', data.isAdmin ? 'true' : 'false');
 
         // Redirect to calendar
         window.location.href = '/calendar.html';
       } catch (error) {
+        console.error('Error checking admin status:', error);
         showError('Failed to verify admin status. Continuing as regular user...');
         localStorage.setItem('isAdmin', 'false');
         setTimeout(() => {
@@ -609,13 +633,20 @@
         }
         
         console.log('Validating manual login for:', email);
+        console.log('SCRIPT_URL:', SCRIPT_URL);
         
         // Call backend to validate credentials against Manual-Login sheet
         const url = SCRIPT_URL + '?action=validateManualLogin&email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password);
+        console.log('Fetch URL:', url);
         
         const response = await fetch(url);
-        const result = await response.json();
+        console.log('Response status:', response.status, response.statusText);
         
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
         console.log('Validation result:', result);
         
         if (result.success) {
@@ -623,7 +654,6 @@
           localStorage.setItem('userEmail', email);
           localStorage.setItem('isAuthenticated', 'true');
           localStorage.setItem('loginMethod', 'manual');
-          localStorage.setItem('isAdmin', 'false');
           
           // Store user email in backend
           try {
@@ -639,10 +669,9 @@
             console.log('Could not store user email:', e);
           }
           
-          console.log('Redirecting to calendar...');
-          setTimeout(() => {
-            window.location.href = '/calendar.html';
-          }, 500);
+          // Check admin status before redirecting
+          console.log('Checking admin status for:', email);
+          checkAdminStatus(email);
         } else {
           console.error('❌ Login failed:', result.message);
           showError(result.message || 'Invalid email or password');
@@ -651,6 +680,11 @@
         
       } catch (error) {
         console.error('Manual login error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
         showError('Login failed: ' + error.message);
         showLoading(false);
       }
