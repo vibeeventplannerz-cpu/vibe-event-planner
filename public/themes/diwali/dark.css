@@ -172,6 +172,34 @@ html[data-active-theme="diwali"][data-theme-mode="dark"] table tr:hover {
   background: rgba(255, 215, 0, 0.08);
 }
 
+/* Event detail sections - Dark mode styling */
+html[data-active-theme="diwali"][data-theme-mode="dark"] .detail-section {
+  background: transparent !important;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .detail-section:last-child {
+  border-bottom: none;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .detail-label {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .detail-content {
+  color: #e0e0e0;
+}
+
+html[data-active-theme="diwali"][data-theme-mode="dark"] .upload-section {
+  background: #b6b0b0 !important;
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
 /* Diwali dark particles */
 .diwali-particle {
   position: fixed;

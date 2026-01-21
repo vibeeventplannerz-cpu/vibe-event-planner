@@ -109,12 +109,17 @@
           const config = snapshot.val();
           console.log('[ThemeEngine] 🔥 Got Firebase update:', config);
 
-          // PHASE 3: Update when Firebase changes
-          if (config.theme && config.theme !== currentTheme) {
-            currentTheme = config.theme;
-            currentMode = config.mode || 'light';
+          // PHASE 3: Update when Firebase changes (theme OR mode)
+          const newTheme = config.theme || currentTheme;
+          const newMode = config.mode || 'light';
+          const themeChanged = newTheme !== currentTheme;
+          const modeChanged = newMode !== currentMode;
 
-            console.log(`[ThemeEngine] 🎨 Admin updated theme to: ${currentTheme}`);
+          if (themeChanged || modeChanged) {
+            currentTheme = newTheme;
+            currentMode = newMode;
+
+            console.log(`[ThemeEngine] 🎨 Admin updated: theme=${currentTheme}, mode=${currentMode}`);
             
             // Apply theme instantly to current page
             applyTheme(currentTheme, currentMode);
