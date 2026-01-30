@@ -609,6 +609,11 @@
         </div>
 
         <div class="form-group">
+          <label for="eventMapUrl">Map URL</label>
+          <input type="url" id="eventMapUrl" placeholder="https://maps.google.com/...">
+        </div>
+
+        <div class="form-group">
           <label for="eventDescription">Description</label>
           <textarea id="eventDescription" placeholder="Additional details..."></textarea>
         </div>
@@ -643,7 +648,8 @@
     // Helper to POST to Apps Script REST endpoint (form-encoded to avoid CORS preflight)
     function postToScript(payload) {
       const idToken = localStorage.getItem('googleToken') || '';
-      const body = Object.assign({}, payload, { id_token: idToken });
+      const email = localStorage.getItem('userEmail') || '';
+      const body = Object.assign({}, payload, { id_token: idToken, userEmail: email });
       const params = new URLSearchParams();
       for (const k in body) {
         if (body[k] === undefined || body[k] === null) continue;
@@ -840,6 +846,7 @@
       document.getElementById('eventTime').value = time;
   
       document.getElementById('eventLocation').value = event.location;
+      document.getElementById('eventMapUrl').value = event.mapUrl || '';
       document.getElementById('eventDescription').value = event.description;
       document.getElementById('eventAttendees').value = event.attendeeList;
       document.getElementById('eventPicture').value = event.pictureUrl;
@@ -877,6 +884,7 @@
         date: document.getElementById('eventDate').value,
         time: formatTime(document.getElementById('eventTime').value),
         location: document.getElementById('eventLocation').value,
+        mapUrl: document.getElementById('eventMapUrl').value,
         description: document.getElementById('eventDescription').value,
         attendeeList: document.getElementById('eventAttendees').value,
         pictureUrl: document.getElementById('eventPicture').value

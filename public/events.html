@@ -826,6 +826,17 @@
           <input type="text" id="eventAttendeeList" placeholder="Enter names separated by commas (e.g., Nandha, Deepan, Team)">
         </div>
 
+        <!-- <div class="form-group">
+          <label for="eventLocation"><i class="fas fa-map-marker-alt"></i> Location</label>
+          <input type="text" id="eventLocation" placeholder="e.g., Chennai, Tiruppur">
+        </div> -->
+
+        <div class="form-group">
+          <label for="eventMapUrl"><i class="fas fa-map"></i> Map URL</label>
+          <input type="url" id="eventMapUrl" placeholder="https://maps.google.com/...">
+        </div>
+
+      
         <div class="form-group">
           <label><i class="fas fa-image"></i> Event Picture</label>
   
@@ -1210,6 +1221,7 @@
       document.getElementById('eventEvents').value = event.events;
       document.getElementById('eventDescription').value = event.description;
       document.getElementById('eventAttendeeList').value = event.attendeeList || '';
+      document.getElementById('eventMapUrl').value = event.mapUrl || '';
       document.getElementById('eventPicture').value = event.pictureUrl;
   
       // Show current picture if exists
@@ -1426,8 +1438,10 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
     date: originalEvent.date,
     time: originalEvent.time,
     location: originalEvent.location,
+    mapUrl: document.getElementById('eventMapUrl').value,
     description: document.getElementById('eventDescription').value,
     attendeeList: document.getElementById('eventAttendeeList').value,
+    mapUrl: document.getElementById('eventMapUrl').value,
     pictureUrl: pictureUrl
   };
   

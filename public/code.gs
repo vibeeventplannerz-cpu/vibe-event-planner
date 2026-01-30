@@ -325,12 +325,12 @@ function initializeSheet() {
     sheet = spreadsheet.insertSheet(SHEET_NAME);
   }
   
-  const firstRow = sheet.getRange(1, 1, 1, 9).getValues()[0];
+  const firstRow = sheet.getRange(1, 1, 1, 10).getValues()[0];
   if (!firstRow[0] || firstRow[0] !== 'Event Name') {
-    sheet.getRange(1, 1, 1, 9).setValues([[
-      'Event Name', 'Events', 'Date', 'Time', 'Location', 'Description', 'Attendee List', 'Picture URL', 'File IDs'
+    sheet.getRange(1, 1, 1, 10).setValues([[
+      'Event Name', 'Events', 'Date', 'Time', 'Location', 'Description', 'Attendee List', 'Picture URL', 'File IDs', 'Map URL'
     ]]);
-    sheet.getRange(1, 1, 1, 9)
+    sheet.getRange(1, 1, 1, 10)
       .setFontWeight('bold')
       .setBackground('#667eea')
       .setFontColor('#ffffff');
@@ -550,7 +550,7 @@ function getEvents() {
       return [];
     }
     
-    const data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
+    const data = sheet.getRange(2, 1, lastRow - 1, 10).getValues();
     Logger.log('Data fetched, rows:', data.length);
     
     const events = [];
@@ -609,7 +609,8 @@ function getEvents() {
         description: data[i][5] ? data[i][5].toString() : '',
         attendeeList: data[i][6] ? data[i][6].toString() : '',
         pictureUrl: data[i][7] ? data[i][7].toString() : '',
-        fileIds: data[i][8] ? data[i][8].toString() : ''
+        fileIds: data[i][8] ? data[i][8].toString() : '',
+        mapUrl: data[i][9] ? data[i][9].toString() : ''
       };
       
       events.push(event);
@@ -772,7 +773,7 @@ function addEvent(eventData) {
       }
     }
     
-    // Ensure we write all 9 columns (including File IDs column)
+    // Ensure we write all 10 columns (including File IDs and Map URL columns)
     const newRow = lastRow + 1;
     const values = [[
       eventData.eventName || '',
@@ -783,11 +784,12 @@ function addEvent(eventData) {
       eventData.description || '',
       eventData.attendeeList || '',
       eventData.pictureUrl || '',
-      '' // fileIds
+      '', // fileIds
+      eventData.mapUrl || '' // mapUrl
     ]];
     
     Logger.log('Writing row ' + newRow + ': ' + JSON.stringify(values[0]));
-    sheet.getRange(newRow, 1, 1, 9).setValues(values);
+    sheet.getRange(newRow, 1, 1, 10).setValues(values);
     Logger.log('✅ Wrote to sheet, lastRow is now: ' + sheet.getLastRow());
     
     return { success: true, message: 'Event added successfully!' };
@@ -861,11 +863,12 @@ function updateEvent(eventId, eventData, callerEmail) {
       eventData.description || '',
       eventData.attendeeList || '',
       eventData.pictureUrl || '',
-      existingFileIds
+      existingFileIds,
+      eventData.mapUrl || ''
     ]];
     
     Logger.log('Writing row ' + row + ': ' + JSON.stringify(values[0]));
-    sheet.getRange(row, 1, 1, 9).setValues(values);
+    sheet.getRange(row, 1, 1, 10).setValues(values);
     Logger.log('✅ Event updated at row: ' + row);
     return { success: true, message: 'Event updated successfully!' };
   } catch (error) {

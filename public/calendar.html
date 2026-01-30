@@ -476,6 +476,72 @@
       margin-top: 10px;
     }
 
+    /* Map Display Styles */
+    .event-map-section {
+      margin-top: 15px;
+      border-top: 2px solid #e0e0e0;
+      padding-top: 15px;
+    }
+
+    .detail-label {
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 0.95em;
+    }
+
+    .event-map-container, .mapimg {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #667eea;
+      background: #f9f9f9;
+    }
+
+    .event-map-container, .mapimg {
+      width: 100%;
+      height: 400px;
+      border: none;
+    }
+
+    /* Mobile View - Smaller map */
+    @media (max-width: 768px) {
+      .event-map-container, .mapimg {
+        height: 200px;
+      }
+    }
+
+    /* Mobile View - Very small screens */
+    @media (max-width: 480px) {
+      .event-map-container, .mapimg {
+        height: 180px;
+      }
+    }
+
+    /* Desktop View - Larger map */
+    @media (min-width: 1024px) {
+      .event-map-container {
+        height: 350px;
+      }
+    }
+
+    .event-map-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 15px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.9em;
+      transition: all 0.3s;
+    }
+
+    .event-map-link:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
     .upload-section {
       background: #f0f4ff;
       padding: 20px;
@@ -1411,6 +1477,19 @@
                        style="cursor: pointer; max-width: 100%; border-radius: 10px;" 
                        onclick="openImageModal('${event.pictureUrl.replace(/'/g, "\\'")}')"
                        onerror="this.style.display='none';">
+                </div>
+              ` : ''}
+              ${event.mapUrl ? `
+                <div class="event-map-section">
+                  <div class="detail-label">🗺️ Location Map</div>
+                  <div class="event-map-container">
+                    <a class="mapimg" href="${event.mapUrl}" target="_blank" class="event-map-link">
+                      <img class="mapimg" src="/icons/maps.webp">
+                    </a>
+                  </div>
+                  <a href="${event.mapUrl}" target="_blank" class="event-map-link">
+                    <i class="fas fa-external-link-alt"></i> Open Full Map
+                  </a>
                 </div>
               ` : ''}
               ${renderFiles(event.fileIds, event.id)}
