@@ -134,9 +134,14 @@ function doGet(e) {
 
   Logger.log('doGet called with params:', JSON.stringify(e.parameter));
 
-  // Auto-archive old events on 1st of month
+  // Trigger archive if it's the 1st of month (backup to scheduled trigger)
+  // This ensures archive runs even if the scheduled trigger fails
   try {
-    archiveOldEvents();
+    const now = new Date();
+    if (now.getDate() === 1) {
+      Logger.log('Today is 1st of month, triggering archive as backup');
+      archiveOldEvents();
+    }
   } catch (archiveErr) {
     Logger.log('Archive error (non-critical):', archiveErr);
   }
@@ -370,26 +375,17 @@ function initializeArchiveSheet() {
 function archiveOldEvents() {
   try {
     const now = new Date();
-    const today = now.getDate();
-    
-    Logger.log('Archive check: Today is ' + today);
-    
-    // Only run on 1st of month
-    if (today !== 1) {
-      Logger.log('Not 1st of month, skipping archive');
-      return { success: false, message: 'Archive runs only on 1st of month' };
-    }
-    
-    // Get current month and year
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     
     Logger.log('=== Archive Process Started ===');
-    Logger.log('Current month: ' + getMonthName(currentMonth) + ' ' + currentYear);
-    Logger.log('Previous month: ' + getMonthName(previousMonth) + ' ' + previousYear);
-    Logger.log('Archive threshold: Events older than ' + getMonthName(previousMonth) + ' ' + previousYear);
+    Logger.log('Current date:', Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss'));
+    
+    // Calculate cutoff date: 2 months ago (first day of that month)
+    const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1, 0, 0, 0);
+    const archiveThresholdMonth = twoMonthsAgo.getMonth();
+    const archiveThresholdYear = twoMonthsAgo.getFullYear();
+    
+    Logger.log('Archiving events from: ' + getMonthName(archiveThresholdMonth) + ' ' + archiveThresholdYear + ' and OLDER');
+    Logger.log('Keeping events from: ' + getMonthName(twoMonthsAgo.getMonth() + 2) + ' ' + now.getFullYear() + ' onwards');
     
     const sheet = initializeSheet();
     const archiveSheet = initializeArchiveSheet();
@@ -438,14 +434,15 @@ function archiveOldEvents() {
           eventYear = dateObj.getFullYear();
         }
         
-        // Check if event is in current or previous month
-        const isCurrentMonth = (eventMonth === currentMonth && eventYear === currentYear);
-        const isPreviousMonth = (eventMonth === previousMonth && eventYear === previousYear);
+        // Check if event is 2+ months old
+        // Event should be archived if it's from a month <= archiveThresholdMonth AND year <= archiveThresholdYear
+        const shouldArchive = (eventYear < archiveThresholdYear) || 
+                             (eventYear === archiveThresholdYear && eventMonth <= archiveThresholdMonth);
         
-        Logger.log('Row ' + (i + 2) + ': ' + eventName + ' [' + eventMonth + '/' + eventYear + '] - Current: ' + isCurrentMonth + ', Previous: ' + isPreviousMonth);
+        Logger.log('Row ' + (i + 2) + ': ' + eventName + ' [' + getMonthName(eventMonth) + ' ' + eventYear + '] - ShouldArchive: ' + shouldArchive);
         
-        if (isCurrentMonth || isPreviousMonth) {
-          // KEEP: Current or previous month
+        if (!shouldArchive) {
+          // KEEP: Less than 2 months old
           Logger.log('  ✅ KEEPING: ' + eventName + ' (' + getMonthName(eventMonth) + ' ' + eventYear + ')');
           keptCount++;
         } else {
@@ -489,8 +486,13 @@ function archiveOldEvents() {
     Logger.log('✅ Archived: ' + archivedCount);
     Logger.log('✅ Kept: ' + keptCount);
     
+    // Sort both sheets by date to maintain chronological order
+    sortSheetByDate(SHEET_NAME);
+    sortSheetByDate(ARCHIVE_SHEET_NAME);
+    Logger.log('✅ Both sheets sorted by date');
+    
     return { 
-      success: true, 
+      success: true,
       message: 'Archived ' + archivedCount + ' events. Keeping ' + keptCount + ' events from current & previous months.',
       archivedCount: archivedCount,
       keptCount: keptCount,
@@ -534,6 +536,40 @@ function formatDateForArchive(dateObj) {
   }
 }
 
+// ==================== SORT SHEET BY DATE ====================
+/**
+ * Sorts all events in a sheet by date (column 3) in ascending order
+ * @param {string} sheetName - Name of sheet to sort
+ */
+function sortSheetByDate(sheetName) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = spreadsheet.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      Logger.log('Sheet not found: ' + sheetName);
+      return false;
+    }
+    
+    const lastRow = sheet.getLastRow();
+    
+    // If only header row or no data, nothing to sort
+    if (lastRow <= 1) {
+      Logger.log('Sheet ' + sheetName + ' has no data to sort');
+      return true;
+    }
+    
+    // Sort by column 3 (Date column), ascending order (oldest first)
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, 10);
+    dataRange.sort(3); // 3 = column C (Date)
+    
+    Logger.log('✅ Sorted ' + sheetName + ' by date: ' + (lastRow - 1) + ' rows');
+    return true;
+  } catch (error) {
+    Logger.log('Error sorting sheet: ' + error.toString());
+    return false;
+  }
+}
 
 // ==================== GET ALL EVENTS ====================
 function getEvents() {
@@ -792,6 +828,10 @@ function addEvent(eventData) {
     sheet.getRange(newRow, 1, 1, 10).setValues(values);
     Logger.log('✅ Wrote to sheet, lastRow is now: ' + sheet.getLastRow());
     
+    // Sort sheet by date to maintain chronological order
+    sortSheetByDate(SHEET_NAME);
+    Logger.log('✅ Sheet sorted by date');
+    
     return { success: true, message: 'Event added successfully!' };
   } catch (error) {
     Logger.log('❌ Error adding event: ' + error.toString());
@@ -870,6 +910,11 @@ function updateEvent(eventId, eventData, callerEmail) {
     Logger.log('Writing row ' + row + ': ' + JSON.stringify(values[0]));
     sheet.getRange(row, 1, 1, 10).setValues(values);
     Logger.log('✅ Event updated at row: ' + row);
+    
+    // Sort sheet by date to maintain chronological order
+    sortSheetByDate(SHEET_NAME);
+    Logger.log('✅ Sheet sorted by date after update');
+    
     return { success: true, message: 'Event updated successfully!' };
   } catch (error) {
     Logger.log('❌ Error updating event: ' + error.toString());
@@ -1302,6 +1347,55 @@ function createCleanupTrigger() {
     .create();
     
   Logger.log('Cleanup trigger created successfully');
+}
+
+// ==================== CREATE ARCHIVE TRIGGER ====================
+function createArchiveTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'archiveOldEvents') {
+      ScriptApp.deleteTrigger(trigger);
+      Logger.log('Deleted existing archive trigger');
+    }
+  });
+  
+  // Run on 1st of every month at 12:00 AM UTC
+  ScriptApp.newTrigger('archiveOldEvents')
+    .timeBased()
+    .onMonthDay(1)
+    .atHour(0)
+    .create();
+    
+  Logger.log('✅ Archive trigger created: Runs on 1st of every month at 12:00 AM UTC');
+  return { success: true, message: 'Archive trigger created for 1st of every month' };
+}
+
+// ==================== MANUAL SORT SHEETS ====================
+/**
+ * Manually sort both Sheet1 and Archive by date
+ * Useful if events get added in wrong order
+ */
+function sortAllSheetsByDate() {
+  try {
+    Logger.log('=== Manual Sort All Sheets Started ===');
+    
+    const result1 = sortSheetByDate(SHEET_NAME);
+    const result2 = sortSheetByDate(ARCHIVE_SHEET_NAME);
+    
+    Logger.log('=== Manual Sort Complete ===');
+    Logger.log('Sheet1 sorted: ' + (result1 ? 'YES' : 'NO'));
+    Logger.log('Archive sorted: ' + (result2 ? 'YES' : 'NO'));
+    
+    return {
+      success: result1 && result2,
+      message: 'Sorted ' + SHEET_NAME + ' and ' + ARCHIVE_SHEET_NAME + ' by date',
+      sheet1Sorted: result1,
+      archiveSorted: result2
+    };
+  } catch (error) {
+    Logger.log('Error in sortAllSheetsByDate: ' + error.toString());
+    return { success: false, message: 'Error sorting sheets: ' + error.toString() };
+  }
 }
 
 // ==================== VERIFY ID TOKEN (Google) ====================
