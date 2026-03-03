@@ -1,38 +1,39 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#667eea">
-  
+
   <!-- TIER 1: OWNER OVERRIDE ONLY -->
   <script>
-    window.addEventListener('load', function() {
-      const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
+    window.addEventListener('load', function () {
+      const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com', 'hn6160324@gmail.com'];
       const userEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
       const ADMIN_OVERRIDES_LOWER = ADMIN_OVERRIDE_EMAILS.map(e => (e || '').toLowerCase());
       const isOwnerOverride = ADMIN_OVERRIDES_LOWER.indexOf(userEmail) !== -1;
-      
+
       if (!isOwnerOverride) {
         document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: Arial;"><h1>❌ Access Denied</h1><p>Only owners can access the admin panel.</p><p><a href="/calendar.html">Back to Calendar</a></p></div>';
         setTimeout(() => { window.location.href = '/calendar.html'; }, 2000);
       }
     });
   </script>
-  
+
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#667eea">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
-  
+
   <title>Admin Panel</title>
 
   <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
   <script>
-    (function() {
+    (function () {
       try {
         const stored = localStorage.getItem('VIBE_THEME_CONFIG');
         if (stored) {
@@ -112,7 +113,7 @@
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
     .btn-success {
@@ -146,7 +147,7 @@
       background: white;
       border-radius: 20px;
       padding: 30px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       margin-bottom: 20px;
     }
 
@@ -274,7 +275,7 @@
 
     .theme-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
     .theme-card.active {
@@ -406,11 +407,11 @@
       border-radius: 50%;
     }
 
-    input:checked + .toggle-slider {
+    input:checked+.toggle-slider {
       background-color: #667eea;
     }
 
-    input:checked + .toggle-slider:before {
+    input:checked+.toggle-slider:before {
       transform: translateX(26px);
     }
 
@@ -431,7 +432,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 1000;
       overflow-y: auto;
     }
@@ -502,6 +503,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="header">
@@ -519,13 +521,13 @@
     <!-- Festival Theme Selector Section -->
     <div class="card theme-section">
       <h2 style="color: #667eea; margin-bottom: 20px;">🎉 Festival Theme</h2>
-      
+
       <!-- Desktop: Card Layout -->
       <div class="theme-cards-container" id="themeCardsContainer"></div>
-      
+
       <!-- Mobile: List Layout -->
       <div class="theme-list-container" id="themeListContainer"></div>
-      
+
       <!-- Diwali Mode Selector -->
       <div class="mode-selector" id="modeSelector">
         <label>
@@ -565,10 +567,10 @@
         <h2 id="modalTitle">Add New Event</h2>
         <button class="close-btn" onclick="closeModal()">&times;</button>
       </div>
-      
+
       <form id="eventForm" onsubmit="saveEvent(event)">
         <input type="hidden" id="eventId">
-        
+
         <div class="form-group">
           <label for="eventName">Event Name *</label>
           <input type="text" id="eventName" list="eventNameSuggestions" required placeholder="e.g., Birthday Party">
@@ -668,23 +670,23 @@
     // No backend SCRIPT_URL needed - using local active-theme.json approach
 
     // Admin Authentication Check
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
       const isAuthenticated = localStorage.getItem('isAuthenticated');
       const isAdmin = localStorage.getItem('isAdmin');
       userEmail = localStorage.getItem('userEmail'); // Set global variable
-      
+
       if (!isAuthenticated || !userEmail) {
         alert('Please login first');
         window.location.href = '/index.html';
         return;
       }
-      
+
       if (isAdmin !== 'true') {
         alert('Access Denied: Admin only');
         window.location.href = '/calendar.html';
         return;
       }
-      
+
       // Admin verified - continue
       console.log('Admin access granted:', userEmail);
       initApp();
@@ -696,25 +698,25 @@
 
     function initApp() {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
-          google.script.run
-            .withSuccessHandler(function(url) {
-              webAppUrl = url;
-              loadEvents();
-            })
-            .getWebAppUrl();
-        } else {
-          // No backend configured - using local active-theme.json approach
-          loadEvents();
-        }
+        google.script.run
+          .withSuccessHandler(function (url) {
+            webAppUrl = url;
+            loadEvents();
+          })
+          .getWebAppUrl();
+      } else {
+        // No backend configured - using local active-theme.json approach
+        loadEvents();
+      }
     }
 
     function loadEvents() {
       console.log('loadEvents called, userEmail:', userEmail);
-      
+
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         console.log('Using google.script.run');
         google.script.run
-          .withSuccessHandler(function(events) {
+          .withSuccessHandler(function (events) {
             console.log('Google Script events received:', events);
             allEvents = events || [];
             displayEvents(allEvents);
@@ -723,7 +725,7 @@
             if (loading) loading.style.display = 'none';
             if (table) table.style.display = 'block';
           })
-          .withFailureHandler(function(error) {
+          .withFailureHandler(function (error) {
             console.error('Google Script error:', error);
             const loading = document.getElementById('loading');
             if (loading) loading.innerHTML = '<div style="color: #dc3545;">Error loading events: ' + (error.message || error) + '</div>';
@@ -734,14 +736,14 @@
 
       // Fallback: REST API (for Netlify static deployment)
       console.log('Admin: Loading events via REST API, SCRIPT_URL:', SCRIPT_URL);
-      
+
       if (!userEmail) {
         console.error('userEmail not set!');
         const loading = document.getElementById('loading');
         if (loading) loading.innerHTML = '<div style="color: #dc3545;">Error: User email not found</div>';
         return;
       }
-      
+
       fetch(`${SCRIPT_URL}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
         .then(r => {
           console.log('Fetch response status:', r.status);
@@ -774,16 +776,16 @@
 
     function displayEvents(events) {
       const tbody = document.getElementById('eventTableBody');
-  
+
       if (events.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No events yet. Click "Add Event" to create one.</td></tr>';
         return;
       }
-  
+
       tbody.innerHTML = events.map(event => {
         const eventId = event.id.replace(/'/g, "\\'"); // Escape single quotes
         const eventName = escapeHtml(event.eventName);
-    
+
         return `
           <tr>
             <td><strong>${event.eventName}</strong></td>
@@ -835,22 +837,22 @@
     function editEvent(eventId) {
       const event = allEvents.find(e => e.id === eventId);
       if (!event) return;
-  
+
       document.getElementById('modalTitle').textContent = 'Edit Event';
       document.getElementById('eventId').value = event.id;
       document.getElementById('eventName').value = event.eventName;
       document.getElementById('eventEvents').value = event.events;
       document.getElementById('eventDate').value = event.date;
-  
+
       const time = convertTo24Hour(event.time);
       document.getElementById('eventTime').value = time;
-  
+
       document.getElementById('eventLocation').value = event.location;
       document.getElementById('eventMapUrl').value = event.mapUrl || '';
       document.getElementById('eventDescription').value = event.description;
       document.getElementById('eventAttendees').value = event.attendeeList;
       document.getElementById('eventPicture').value = event.pictureUrl;
-  
+
       document.getElementById('eventModal').style.display = 'block';
     }
 
@@ -858,15 +860,15 @@
       if (!time12h) return '';
       const [time, modifier] = time12h.split(' ');
       let [hours, minutes] = time.split(':');
-      
+
       if (hours === '12') {
         hours = '00';
       }
-      
+
       if (modifier === 'PM') {
         hours = parseInt(hours, 10) + 12;
       }
-      
+
       return `${hours.toString().padStart(2, '0')}:${minutes}`;
     }
 
@@ -891,7 +893,7 @@
       };
 
       console.log('Admin saveEvent:', { eventId, eventData });
-      
+
       const saveBtn = e.target.querySelector('button[type="submit"]');
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving...';
@@ -899,11 +901,11 @@
       // If google.script.run is available (Apps Script hosting), use it.
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         console.log('Using google.script.run path');
-        
+
         if (eventId) {
           // Update event
           google.script.run
-            .withSuccessHandler(function(result) {
+            .withSuccessHandler(function (result) {
               console.log('Update success:', result);
               if (result.success) {
                 showAlert(result.message, 'success');
@@ -915,7 +917,7 @@
               saveBtn.disabled = false;
               saveBtn.textContent = 'Save Event';
             })
-            .withFailureHandler(function(error) {
+            .withFailureHandler(function (error) {
               console.error('Update error:', error);
               showAlert('Error: ' + error, 'error');
               saveBtn.disabled = false;
@@ -925,7 +927,7 @@
         } else {
           // Add event
           google.script.run
-            .withSuccessHandler(function(result) {
+            .withSuccessHandler(function (result) {
               console.log('Add success:', result);
               if (result.success) {
                 showAlert(result.message, 'success');
@@ -937,7 +939,7 @@
               saveBtn.disabled = false;
               saveBtn.textContent = 'Save Event';
             })
-            .withFailureHandler(function(error) {
+            .withFailureHandler(function (error) {
               console.error('Add error:', error);
               showAlert('Error: ' + error, 'error');
               saveBtn.disabled = false;
@@ -992,7 +994,7 @@
     function deleteEvent(eventId) {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(function(result) {
+          .withSuccessHandler(function (result) {
             if (result.success) {
               showAlert(result.message, 'success');
               loadEvents();
@@ -1000,7 +1002,7 @@
               showAlert(result.message, 'error');
             }
           })
-          .withFailureHandler(function(error) {
+          .withFailureHandler(function (error) {
             showAlert('Error: ' + error, 'error');
           })
           .deleteEvent(eventId);
@@ -1039,7 +1041,7 @@
       window.location.href = '/events.html';
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('eventModal');
       if (event.target === modal) {
         closeModal();
@@ -1085,7 +1087,7 @@
       } catch (error) {
         console.warn('Failed to load from localStorage:', error);
       }
-      
+
       // Fallback to default if localStorage is empty
       return { theme: 'default', mode: 'light' };
     }
@@ -1102,7 +1104,7 @@
           <div class="theme-card-name">${theme.name}</div>
         </div>
       `).join('');
-      
+
       // Update mode selector visibility and state after a short delay to allow DOM to update
       setTimeout(() => {
         const modeSelector = document.getElementById('modeSelector');
@@ -1154,19 +1156,19 @@
     function setupThemeSelectorListeners() {
       // Desktop theme cards
       document.querySelectorAll('.theme-card').forEach(card => {
-        card.addEventListener('click', async function() {
+        card.addEventListener('click', async function () {
           const themeId = this.getAttribute('data-theme-id');
-          
+
           // Get selected mode (for Diwali)
           let selectedMode = 'light';
           if (themeId === 'diwali') {
             const selectedRadio = document.querySelector('input[name="diwali-mode"]:checked');
             selectedMode = selectedRadio ? selectedRadio.value : 'light';
           }
-          
+
           // Save theme
           await saveTheme(themeId, selectedMode);
-          
+
           // Reload UI completely
           const config = await loadCurrentTheme();
           renderThemeCards(config);
@@ -1178,25 +1180,25 @@
       // Mobile theme list toggles
       document.querySelectorAll('.theme-list-item').forEach(item => {
         const toggle = item.querySelector('input[type="checkbox"]');
-        
-        toggle.addEventListener('change', async function() {
+
+        toggle.addEventListener('change', async function () {
           const themeId = item.getAttribute('data-theme-id');
-          
+
           if (this.checked) {
             // Theme turned ON
             let mode = 'light';
-            
+
             if (themeId === 'diwali') {
               const modeRadio = item.querySelector('input[name="diwali-mode-mobile"]:checked');
               mode = modeRadio?.value || 'light';
             }
-            
+
             await saveTheme(themeId, mode);
           } else {
             // Theme turned OFF - switch to default
             await saveTheme('default', 'light');
           }
-          
+
           // Reload UI completely
           const config = await loadCurrentTheme();
           renderThemeCards(config);
@@ -1207,10 +1209,10 @@
 
       // Diwali mode selector (desktop)
       document.querySelectorAll('input[name="diwali-mode"]').forEach(radio => {
-        radio.addEventListener('change', async function() {
+        radio.addEventListener('change', async function () {
           const mode = this.value;
           const config = await loadCurrentTheme();
-          
+
           if (config.theme === 'diwali') {
             // Save and reload UI
             await saveTheme('diwali', mode);
@@ -1289,10 +1291,10 @@
     }
 
     // Initialize theme selector when admin panel loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       initThemeSelector();
     });
-    
+
     // Also initialize if DOM is already loaded
     if (document.readyState !== 'loading') {
       initThemeSelector();
@@ -1317,4 +1319,5 @@
     }
   </script>
 </body>
+
 </html>

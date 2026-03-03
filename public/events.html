@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#667eea">
-  
+
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#667eea">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
-  
+
   <title>Events Gallery</title>
 
   <!-- INSTANT THEME LOADER - Prevent flash of default theme -->
   <script>
-    (function() {
+    (function () {
       try {
         const stored = localStorage.getItem('VIBE_THEME_CONFIG');
         if (stored) {
@@ -32,7 +33,7 @@
       }
     })();
   </script>
-  
+
   <!-- Firebase Scripts (MUST be before firebase-config.js) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -41,7 +42,7 @@
 
   <!-- Festival Theme Engine (AFTER Firebase) -->
   <script src="/themes/_core/theme-engine.js"></script>
-  
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
@@ -50,19 +51,19 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 20px;
     }
-    
+
     .container {
       max-width: 1400px;
       margin: 0 auto;
     }
-    
+
     .header {
       display: flex;
       justify-content: space-between;
@@ -71,18 +72,18 @@
       flex-wrap: wrap;
       gap: 15px;
     }
-    
+
     .header h1 {
       color: white;
       font-size: 2em;
     }
-    
+
     .nav-buttons {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
-    
+
     .btn {
       padding: 12px 24px;
       border: none;
@@ -92,34 +93,34 @@
       transition: all 0.3s;
       font-weight: 500;
     }
-    
+
     .btn-primary {
       background: white;
       color: #667eea;
     }
-    
+
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
-    
+
     .btn-success {
       background: #28a745;
       color: white;
     }
-    
+
     .btn-success:hover {
       background: #218838;
     }
-    
+
     .card {
       background: white;
       border-radius: 20px;
       padding: 30px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       margin-bottom: 20px;
     }
-    
+
     .month-navigation {
       display: flex;
       flex-direction: column;
@@ -131,19 +132,19 @@
       color: white;
       gap: 15px;
     }
-    
+
     .month-title {
       font-size: 1.8em;
       font-weight: bold;
     }
-    
+
     .month-buttons {
       display: flex;
       gap: 15px;
     }
-    
+
     .month-btn {
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       border: 2px solid white;
       color: white;
       padding: 10px 20px;
@@ -157,12 +158,12 @@
       min-width: 120px;
       justify-content: center;
     }
-    
+
     .month-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
     .month-btn:hover:not(:disabled) {
       background: white;
       color: #667eea;
@@ -175,7 +176,7 @@
       color: #667eea;
       font-size: 1.2em;
     }
-    
+
     .spinner {
       width: 50px;
       height: 50px;
@@ -185,12 +186,17 @@
       animation: spin 1s linear infinite;
       margin: 0 auto 20px;
     }
-    
+
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
-    
+
     .error-message {
       background: #fee;
       color: #c33;
@@ -201,14 +207,14 @@
     }
 
     /* debug-info removed */
-    
+
     .search-filter {
       display: flex;
       gap: 15px;
       margin-bottom: 25px;
       flex-wrap: wrap;
     }
-    
+
     .search-input {
       flex: 1;
       min-width: 250px;
@@ -217,18 +223,18 @@
       border-radius: 10px;
       font-size: 1em;
     }
-    
+
     .search-input:focus {
       outline: none;
       border-color: #667eea;
     }
-    
+
     .events-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 25px;
     }
-    
+
     .event-card {
       background: #f0f0f0;
       border-radius: 15px;
@@ -237,13 +243,13 @@
       border: 2px solid transparent;
       position: relative;
     }
-    
+
     .event-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
       border-color: #667eea;
     }
-    
+
     .event-image {
       width: 100%;
       height: 200px;
@@ -256,17 +262,17 @@
       font-size: 3em;
       cursor: pointer;
     }
-    
+
     .event-image img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
+
     .event-content {
       padding: 20px;
     }
-    
+
     .event-title {
       font-size: 1.3em;
       font-weight: bold;
@@ -274,7 +280,7 @@
       margin-bottom: 10px;
       cursor: pointer;
     }
-    
+
     .event-meta {
       display: none;
       flex-direction: column;
@@ -283,17 +289,17 @@
       font-size: 0.9em;
       margin-bottom: 15px;
     }
-    
+
     .event-meta.expanded {
       display: flex;
     }
-    
+
     .event-meta span {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    
+
     .event-description {
       color: #555;
       font-size: 0.9em;
@@ -301,11 +307,11 @@
       margin-bottom: 15px;
       display: none;
     }
-    
+
     .event-description.expanded {
       display: block;
     }
-    
+
     .event-actions {
       display: flex;
       gap: 10px;
@@ -313,7 +319,7 @@
       border-top: 1px solid #e0e0e0;
       margin-top: 10px;
     }
-    
+
     .btn-edit {
       background: #667eea;
       color: white;
@@ -328,11 +334,11 @@
       gap: 8px;
       justify-content: center;
     }
-    
+
     .btn-edit:hover {
       background: #5568d3;
     }
-    
+
     .expand-icon {
       position: absolute;
       top: 215px;
@@ -349,30 +355,30 @@
       transition: all 0.3s;
       z-index: 10;
     }
-    
+
     .expand-icon:hover {
       background: #5568d3;
       transform: scale(1.1);
     }
-    
+
     .expand-icon.expanded {
       transform: rotate(180deg);
     }
-    
+
     .loading {
       text-align: center;
       padding: 60px;
       color: #667eea;
       font-size: 1.2em;
     }
-    
+
     .no-events {
       text-align: center;
       padding: 60px;
       color: #999;
       font-size: 1.2em;
     }
-    
+
     #backToTopBtn {
       display: none;
       position: fixed;
@@ -386,18 +392,18 @@
       background: #667eea;
       color: #fff;
       cursor: pointer;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
       font-size: 20px;
       transition: all 0.3s;
       z-index: 999;
     }
-    
+
     #backToTopBtn:hover {
       background: #5568d3;
       transform: translateY(-3px);
-      box-shadow: 0 10px 18px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4);
     }
-    
+
     /* Modal Styles */
     .modal {
       display: none;
@@ -406,12 +412,12 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       z-index: 1000;
       overflow-y: auto;
       padding: 20px;
     }
-    
+
     .modal-content {
       background: white;
       margin: 50px auto;
@@ -420,7 +426,7 @@
       max-width: 700px;
       position: relative;
     }
-    
+
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -429,12 +435,12 @@
       padding-bottom: 15px;
       border-bottom: 2px solid #e0e0e0;
     }
-    
+
     .modal-header h2 {
       color: #667eea;
       font-size: 1.8em;
     }
-    
+
     .close-btn {
       background: none;
       border: none;
@@ -443,16 +449,16 @@
       color: #999;
       transition: all 0.3s;
     }
-    
+
     .close-btn:hover {
       color: #333;
       transform: rotate(90deg);
     }
-    
+
     .form-group {
       margin-bottom: 20px;
     }
-    
+
     .form-group label {
       display: block;
       color: #667eea;
@@ -460,7 +466,7 @@
       margin-bottom: 8px;
       font-size: 0.95em;
     }
-    
+
     .form-group textarea {
       width: 100%;
       padding: 12px;
@@ -472,7 +478,7 @@
       resize: vertical;
       min-height: 120px;
     }
-    
+
     .form-group textarea:focus {
       outline: none;
       border-color: #667eea;
@@ -492,7 +498,7 @@
       outline: none;
       border-color: #667eea;
     }
-    
+
     .file-upload-area {
       border: 2px dashed #667eea;
       border-radius: 12px;
@@ -502,22 +508,22 @@
       cursor: pointer;
       transition: all 0.3s;
     }
-    
+
     .file-upload-area:hover {
       background: #e6edff;
       border-color: #5568d3;
     }
-    
+
     .file-upload-area i {
       font-size: 3em;
       color: #667eea;
       margin-bottom: 15px;
     }
-    
+
     .file-input {
       display: none;
     }
-    
+
     .preview-image {
       max-width: 100%;
       max-height: 300px;
@@ -525,20 +531,20 @@
       margin-top: 15px;
       display: none;
     }
-    
+
     .alert {
       padding: 15px 20px;
       border-radius: 10px;
       margin-bottom: 20px;
       display: none;
     }
-    
+
     .alert-success {
       background: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
-    
+
     .alert-error {
       background: #f8d7da;
       color: #721c24;
@@ -546,59 +552,59 @@
     }
 
 
-    
 
-    
+
+
     @media (max-width: 768px) {
       body {
         padding: 10px;
       }
-      
+
       .header {
         flex-direction: column;
         align-items: stretch;
       }
-      
+
       .header h1 {
         font-size: 1.5em;
       }
-      
+
       .nav-buttons {
         flex-direction: column;
       }
-      
+
       #adminBtn {
         display: none !important;
       }
-      
+
       .month-navigation {
         padding: 20px 15px;
       }
-      
+
       .month-title {
         font-size: 1.5em;
         text-align: center;
       }
-      
+
       .month-buttons {
         width: 100%;
         justify-content: space-between;
         gap: 10px;
       }
-      
+
       .month-btn {
         flex: 1;
         min-width: auto;
         padding: 10px 15px;
       }
-      
+
       .events-grid {
         grid-template-columns: 1fr;
         gap: 10px;
       }
 
-      
-      
+
+
       .event-card {
         display: flex;
         flex-direction: row;
@@ -606,28 +612,28 @@
         margin-bottom: 15px;
         min-height: 100px;
       }
-  
+
       .event-image {
         display: none !important;
       }
-  
+
       .event-content {
         flex: 1;
         padding: 15px;
         display: flex;
         flex-direction: column;
       }
-  
+
       .event-title {
         font-size: 1.1em;
         margin-bottom: 8px;
       }
-  
+
       .event-meta {
         display: flex !important;
         flex: 1;
       }
-  
+
       .event-actions {
         border-top: none;
         padding-top: 0;
@@ -641,14 +647,14 @@
         padding-top: 10px;
         margin-left: auto;
       }
-  
+
       .btn-edit {
         width: auto;
         padding: 8px 16px;
         font-size: 0.9em;
       }
 
-  
+
       .event-description {
         display: none;
       }
@@ -656,36 +662,36 @@
       .expand-icon {
         display: none !important;
       }
-      
+
       .modal-content {
         margin: 20px auto;
         padding: 25px;
       }
-      
+
       .modal-header h2 {
         font-size: 1.4em;
       }
-      
+
       .form-group textarea {
         font-size: 16px;
       }
-      
+
       .form-group textarea#eventDescription {
         min-height: 150px;
       }
-      
+
       .file-upload-area {
         padding: 20px;
       }
-      
+
       .file-upload-area i {
         font-size: 2em;
       }
-      
+
       .card {
         padding: 20px;
       }
-      
+
       #backToTopBtn {
         width: 45px;
         height: 45px;
@@ -695,7 +701,8 @@
 
       .event-card-detail {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Rendu column-ah pirikkum */
+        grid-template-columns: 1fr 1fr;
+        /* Rendu column-ah pirikkum */
         gap: 10px;
       }
 
@@ -707,53 +714,56 @@
         display: none;
       }
     }
-    
+
     @media (max-width: 480px) {
       .event-image {
         height: 180px;
       }
-      
+
       .expand-icon {
         top: 175px;
       }
-      
+
       .event-content {
         padding: 15px;
       }
-      
+
       .event-title {
         font-size: 1.1em;
       }
     }
-    
+
     @media (min-width: 769px) {
       .event-meta {
         display: flex !important;
       }
-      
+
       .event-description {
         display: block !important;
       }
-      
+
       .expand-icon {
         display: none;
       }
-      
+
       .event-actions {
         margin-top: 0;
       }
+
       #event-edit-mob {
         display: none;
       }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="header">
       <h1>📸 Events Gallery</h1>
       <div class="nav-buttons">
-        <button class="btn btn-primary" onclick="openAddEventModal()" style="background: #28a745;">
+        <button class="btn btn-primary" onclick="openAddEventModal()"
+          style="background: #28a332; color: #ffffff; font-weight: bold;">
           <i class="fas fa-plus"></i> Add Event
         </button>
         <button class="btn btn-primary" onclick="goToCalendar()">
@@ -762,15 +772,16 @@
         <button class="btn btn-primary" id="adminBtn" style="display: none;" onclick="goToAdmin()">
           <i class="fas fa-tools"></i> Admin Panel
         </button>
-        <button class="btn btn-secondary" id="logoutBtn" style="margin-left:10px;" onclick="logoutUser()">Logout</button>
+        <button class="btn btn-secondary" id="logoutBtn" style="margin-left:10px;"
+          onclick="logoutUser()">Logout</button>
         <!-- Debug button removed in production -->
       </div>
     </div>
-    
+
     <div id="alertBox" class="alert"></div>
 
     <!-- Debug info removed -->
-    
+
     <div class="card">
       <div class="month-navigation">
         <div class="month-title" id="monthTitle">Loading...</div>
@@ -783,26 +794,27 @@
           </button>
         </div>
       </div>
-      
+
       <div class="search-filter">
-        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by event name, date, or location...">
+        <input type="text" class="search-input" id="searchInput"
+          placeholder="🔍 Search by event name, date, or location...">
       </div>
-      
+
       <div id="loadingSection" class="loading">
         <div class="spinner"></div>
         <p>Loading events...</p>
       </div>
-      
+
       <div id="errorSection" style="display: none;"></div>
-      
+
       <div id="eventsGrid" class="events-grid" style="display: none;"></div>
     </div>
   </div>
-  
+
   <button id="backToTopBtn" aria-label="Back to top">
     <i class="fa-solid fa-arrow-up"></i>
   </button>
-  
+
   <!-- Add Event Modal -->
   <div id="addEventModal" class="modal">
     <div class="modal-content">
@@ -810,33 +822,33 @@
         <h2><i class="fas fa-calendar-plus"></i> Add New Event</h2>
         <button class="close-btn" onclick="closeAddEventModal()">&times;</button>
       </div>
-      
+
       <form id="addEventForm" onsubmit="saveNewEvent(event)">
         <div class="form-group">
           <label for="newEventName"><i class="fas fa-heading"></i> Event Name *</label>
           <input type="text" id="newEventName" required placeholder="e.g., Birthday Party, Team Meeting">
         </div>
-        
+
         <div class="form-group">
           <label for="newEventEvents"><i class="fas fa-list"></i> Events (What's happening) *</label>
           <textarea id="newEventEvents" required placeholder="Describe what will happen at this event..."></textarea>
         </div>
-        
+
         <div class="form-group">
           <label for="newEventDate"><i class="fas fa-calendar-day"></i> Date *</label>
           <input type="date" id="newEventDate" required>
         </div>
-        
+
         <div class="form-group">
           <label for="newEventTime"><i class="fas fa-clock"></i> Time *</label>
           <input type="time" id="newEventTime" required>
         </div>
-        
+
         <div class="form-group">
           <label for="newEventLocation"><i class="fas fa-map-marker-alt"></i> Location *</label>
           <input type="text" id="newEventLocation" required placeholder="e.g., Chennai, Home">
         </div>
-        
+
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; flex-wrap: wrap;">
           <button type="button" class="btn btn-primary" onclick="closeAddEventModal()">
             <i class="fas fa-times"></i> Cancel
@@ -848,7 +860,7 @@
       </form>
     </div>
   </div>
-  
+
   <!-- Edit Modal -->
   <div id="editModal" class="modal">
     <div class="modal-content">
@@ -856,15 +868,15 @@
         <h2><i class="fas fa-edit"></i> Edit Event</h2>
         <button class="close-btn" onclick="closeModal()">&times;</button>
       </div>
-      
+
       <form id="editForm" onsubmit="saveEvent(event)">
         <input type="hidden" id="eventId">
-        
+
         <div class="form-group">
           <label for="eventEvents"><i class="fas fa-list"></i> Events *</label>
           <textarea id="eventEvents" required placeholder="Describe what will happen at this event..."></textarea>
         </div>
-        
+
         <div class="form-group">
           <label for="eventDescription"><i class="fas fa-align-left"></i> Description *</label>
           <textarea id="eventDescription" required placeholder="Additional details about the event..."></textarea>
@@ -872,7 +884,8 @@
 
         <div class="form-group">
           <label for="eventAttendeeList"><i class="fas fa-users"></i> Attendee List (comma-separated)</label>
-          <input type="text" id="eventAttendeeList" placeholder="Enter names separated by commas (e.g., Nandha, Deepan, Team)">
+          <input type="text" id="eventAttendeeList"
+            placeholder="Enter names separated by commas (e.g., Nandha, Deepan, Team)">
         </div>
 
         <!-- <div class="form-group">
@@ -885,18 +898,20 @@
           <input type="url" id="eventMapUrl" placeholder="https://maps.google.com/...">
         </div>
 
-      
+
         <div class="form-group">
           <label><i class="fas fa-image"></i> Event Picture</label>
-  
+
           <!-- Show current picture if exists -->
           <div id="currentPictureSection" style="display: none; margin-bottom: 15px;">
-            <img id="currentPicture" src="" style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 10px;">
-            <button type="button" class="btn" style="background: #dc3545; color: white; width: 100%; padding: 10px;" onclick="deletePicture()">
+            <img id="currentPicture" src=""
+              style="max-width: 100%; max-height: 200px; border-radius: 10px; margin-bottom: 10px;">
+            <button type="button" class="btn" style="background: #dc3545; color: white; width: 100%; padding: 10px;"
+              onclick="deletePicture()">
               <i class="fas fa-trash"></i> Delete Current Picture
             </button>
           </div>
-  
+
           <div class="file-upload-area" onclick="document.getElementById('pictureInput').click()">
             <i class="fas fa-cloud-upload-alt"></i>
             <p>Click to upload picture</p>
@@ -904,7 +919,8 @@
           </div>
           <input type="file" id="pictureInput" class="file-input" accept="image/*" onchange="handleImageUpload(event)">
           <img id="previewImage" class="preview-image">
-          <input type="url" id="eventPicture" placeholder="Or paste image URL" style="width: 100%; margin-top: 10px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+          <input type="url" id="eventPicture" placeholder="Or paste image URL"
+            style="width: 100%; margin-top: 10px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
         </div>
 
         <!-- <div class="form-group">
@@ -912,7 +928,7 @@
           <input type="url" id="eventPicture" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em;">
           <small style="color: #666; display: block; margin-top: 5px;">Paste image URL from Google Drive, Imgur, or any image hosting service</small>
         </div> -->
-        
+
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px; flex-wrap: wrap;">
           <button type="button" class="btn btn-primary" onclick="closeModal()">
             <i class="fas fa-times"></i> Cancel
@@ -927,7 +943,7 @@
 
   <!-- PWA Scripts -->
   <script src="/sw-register.js"></script>
-  
+
   <script>
 
     // Logging utility (for debugging)
@@ -936,14 +952,14 @@
     }
 
     // TIER 1: Owner override list (same as calendar.html)
-    const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com','hn6160324@gmail.com'];
-    
+    const ADMIN_OVERRIDE_EMAILS = ['samplemail333555@gmail.com', 'hn6160324@gmail.com'];
+
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywcML3V7yokIeD0n6Cf3D7OHm_-kOPI60vISaQCvElIDxvFqO9ZeOdxrV2C926OecL/exec'; // ✅ Backend URL configured
 
     let userEmail = ''; // Global variable for user email
 
     // Authentication Check
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
       // Authentication helper: if you want the events page to be public,
       // comment out the redirect below. Currently we do not force a redirect
       // here (admin-only checks belong in admin.html).
@@ -970,12 +986,12 @@
     const todayMonth = new Date().getMonth();
     const todayYear = new Date().getFullYear();
     let expandedEventId = null;
-    
+
     function initApp() {
       // If running inside Google Apps Script web app, use its URL and server calls.
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(function(url) {
+          .withSuccessHandler(function (url) {
             webAppUrl = url;
             checkOwner();
             loadEvents();
@@ -994,12 +1010,12 @@
         loadEvents();
       }
 
-      document.getElementById('searchInput').addEventListener('input', function(e) {
+      document.getElementById('searchInput').addEventListener('input', function (e) {
         filterEvents(e.target.value);
       });
 
       // Back to top button
-      window.addEventListener('scroll', function() {
+      window.addEventListener('scroll', function () {
         const btn = document.getElementById('backToTopBtn');
         if (window.scrollY > 100) {
           btn.style.display = 'block';
@@ -1008,7 +1024,7 @@
         }
       });
 
-      document.getElementById('backToTopBtn').addEventListener('click', function() {
+      document.getElementById('backToTopBtn').addEventListener('click', function () {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
@@ -1040,18 +1056,18 @@
       const userEmail = (localStorage.getItem('userEmail') || '').toLowerCase();
       const ADMIN_OVERRIDES_LOWER = ADMIN_OVERRIDE_EMAILS.map(e => (e || '').toLowerCase());
       const isOwnerOverride = ADMIN_OVERRIDES_LOWER.indexOf(userEmail) !== -1;
-      
+
       isOwner = isOwnerOverride;
       localStorage.setItem('isOwnerOverride', isOwnerOverride ? 'true' : 'false');
-      
+
       // Show admin button for TIER 1 owners on desktop
       if (isOwnerOverride && window.innerWidth > 768) {
         const adminBtn = document.getElementById('adminBtn');
         if (adminBtn) adminBtn.style.display = 'block';
       }
-      
+
       console.log('[Events] checkOwner: user=' + userEmail + ', isOwner=' + isOwner);
-      
+
       // TIER 2: Check if user is in Admins sheet (for edit access)
       if (!isOwnerOverride && SCRIPT_URL && userEmail) {
         console.log('[Events] Checking Admins sheet for:', userEmail);
@@ -1075,28 +1091,28 @@
         window.canEditEvents = isOwnerOverride;
       }
     }
-    
+
     function loadEvents() {
       log('Loading events...');
-      
+
       showLoading(true);
       hideError();
-      
+
       // Method 1: Try Google Apps Script (if available)
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         log('Using Google Apps Script API');
-        
+
         google.script.run
           .withSuccessHandler(handleEventsSuccess)
           .withFailureHandler(handleEventsError)
           .getEvents();
-      } 
+      }
       // Method 2: Try Fetch API (for static hosting / REST backend)
       else if ((typeof webAppUrl === 'string' && webAppUrl) || SCRIPT_URL) {
         const apiUrl = (typeof webAppUrl === 'string' && webAppUrl) ? webAppUrl : SCRIPT_URL;
         log('Using Fetch API with URL:', apiUrl);
         const userEmail = localStorage.getItem('userEmail');
-        
+
         fetch(`${apiUrl}?action=getEvents&email=${encodeURIComponent(userEmail)}`)
           .then(response => {
             log('Events API response status:', response.status);
@@ -1130,77 +1146,77 @@
         }, 1000);
       }
     }
-    
+
     function updateMonthDisplay() {
       log('Updating month display', { currentMonth, currentYear });
-      
+
       const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                          'July', 'August', 'September', 'October', 'November', 'December'];
-      
+        'July', 'August', 'September', 'October', 'November', 'December'];
+
       document.getElementById('monthTitle').textContent = `${monthNames[currentMonth]} ${currentYear}`;
-      
+
       currentMonthEvents = allEvents.filter(event => {
         if (!event.date) return false;
         const eventDate = new Date(event.date + 'T00:00:00');
         return eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
       });
-      
+
       log('Filtered events for current month', { count: currentMonthEvents.length });
-      
+
       const prevBtn = document.getElementById('prevBtn');
       const isCurrentMonth = currentMonth === todayMonth && currentYear === todayYear;
       prevBtn.disabled = isCurrentMonth;
-      
+
       displayEvents(currentMonthEvents);
     }
-    
+
     function previousMonth() {
       if (currentMonth === todayMonth && currentYear === todayYear) return;
-      
+
       currentMonth--;
       if (currentMonth < 0) {
         currentMonth = 11;
         currentYear--;
       }
-      
+
       updateMonthDisplay();
     }
-    
+
     function nextMonth() {
       currentMonth++;
       if (currentMonth > 11) {
         currentMonth = 0;
         currentYear++;
       }
-      
+
       updateMonthDisplay();
     }
-    
+
 
     function displayEvents(events) {
 
       log('Displaying events', { count: events.length });
 
-  const grid = document.getElementById('eventsGrid');
-  
-  if (events.length === 0) {
-    grid.innerHTML = '<div class="no-events"><i class="fas fa-calendar-times"></i><br>No events found for this month</div>';
-    return;
-  }
-  
-  events.sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-  grid.innerHTML = events.map(event => {
-    const hasImage = event.pictureUrl && event.pictureUrl.trim() !== '';
-    const imageHtml = hasImage 
-      ? `<img src="${event.pictureUrl}" alt="${event.eventName}" 
+      const grid = document.getElementById('eventsGrid');
+
+      if (events.length === 0) {
+        grid.innerHTML = '<div class="no-events"><i class="fas fa-calendar-times"></i><br>No events found for this month</div>';
+        return;
+      }
+
+      events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      grid.innerHTML = events.map(event => {
+        const hasImage = event.pictureUrl && event.pictureUrl.trim() !== '';
+        const imageHtml = hasImage
+          ? `<img src="${event.pictureUrl}" alt="${event.eventName}" 
              onerror="this.parentElement.innerHTML='<i class=\\'fas fa-calendar-alt\\'></i>'">`
-      : '<i class="fas fa-calendar-alt"></i>';
-    
-    const eventId = event.id.replace(/'/g, "\\'"); // Escape quotes
-    const canEdit = window.canEditEvents || isOwner; // Check both flags
-      
-    return `
+          : '<i class="fas fa-calendar-alt"></i>';
+
+        const eventId = event.id.replace(/'/g, "\\'"); // Escape quotes
+        const canEdit = window.canEditEvents || isOwner; // Check both flags
+
+        return `
       <div class="event-card" id="card-${btoa(event.id).replace(/=/g, '')}">
         <div class="event-image">
           ${imageHtml}
@@ -1231,59 +1247,59 @@
         </div>
       </div>
     `;
-  }).join('');
-}
-    
-    
-    
+      }).join('');
+    }
+
+
+
     function filterEvents(searchTerm) {
       const term = searchTerm.toLowerCase().trim();
-      
+
       if (term === '') {
         displayEvents(currentMonthEvents);
         return;
       }
-      
+
       const filtered = currentMonthEvents.filter(event => {
         const eventDate = formatDate(event.date).toLowerCase();
         return event.eventName.toLowerCase().includes(term) ||
-               event.location.toLowerCase().includes(term) ||
-               eventDate.includes(term);
+          event.location.toLowerCase().includes(term) ||
+          eventDate.includes(term);
       });
-      
+
       displayEvents(filtered);
     }
-    
+
     function editEvent(eventId) {
       if (!window.canEditEvents && !isOwner) {
         showAlert('Only owner can edit events', 'error');
         return;
       }
-  
+
       const event = allEvents.find(e => e.id === eventId);
       if (!event) return;
-  
+
       // Store full event object for later use in save
       window.currentEditingEvent = event;
-      
+
       document.getElementById('eventId').value = event.id;
       document.getElementById('eventEvents').value = event.events;
       document.getElementById('eventDescription').value = event.description;
       document.getElementById('eventAttendeeList').value = event.attendeeList || '';
       document.getElementById('eventMapUrl').value = event.mapUrl || '';
       document.getElementById('eventPicture').value = event.pictureUrl;
-  
+
       // Show current picture if exists
       const currentPictureSection = document.getElementById('currentPictureSection');
       const currentPicture = document.getElementById('currentPicture');
-  
+
       if (event.pictureUrl && event.pictureUrl.trim() !== '') {
         currentPicture.src = event.pictureUrl;
         currentPictureSection.style.display = 'block';
       } else {
         currentPictureSection.style.display = 'none';
       }
-  
+
       document.getElementById('editModal').style.display = 'block';
     }
 
@@ -1291,14 +1307,14 @@
       if (!confirm('Are you sure you want to delete this picture?')) {
         return;
       }
-  
+
       const currentUrl = document.getElementById('eventPicture').value;
-  
+
       if (currentUrl && currentUrl.trim() !== '') {
         // Delete from Drive if it's a Drive image
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
-            .withSuccessHandler(function(result) {
+            .withSuccessHandler(function (result) {
               if (result.success) {
                 document.getElementById('eventPicture').value = '';
                 document.getElementById('currentPictureSection').style.display = 'none';
@@ -1308,7 +1324,7 @@
                 showAlert('Error deleting: ' + result.error, 'error');
               }
             })
-            .withFailureHandler(function(error) {
+            .withFailureHandler(function (error) {
               showAlert('Delete error: ' + error, 'error');
             })
             .deleteImageFromDrive(currentUrl);
@@ -1334,26 +1350,26 @@
     function handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-  
+
       // Check if it's an image
       if (!file.type.startsWith('image/')) {
         showAlert('Please select an image file', 'error');
         return;
       }
-  
+
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
           // Compress image if needed
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-      
+
           // Calculate new dimensions (max 1200px width)
           const maxWidth = 1200;
           const maxHeight = 1200;
-      
+
           if (width > maxWidth || height > maxHeight) {
             if (width > height) {
               height = (height / width) * maxWidth;
@@ -1363,31 +1379,31 @@
               height = maxHeight;
             }
           }
-      
+
           canvas.width = width;
           canvas.height = height;
-      
+
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-      
+
           // Compress to JPEG with quality 0.7
           let compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-      
+
           // Check size and compress more if needed
           let quality = 0.7;
           while (compressedDataUrl.length > 2 * 1024 * 1024 && quality > 0.1) {
             quality -= 0.1;
             compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
           }
-      
+
           // Show preview
           const preview = document.getElementById('previewImage');
           preview.src = compressedDataUrl;
           preview.style.display = 'block';
-      
+
           // Store compressed data
           document.getElementById('eventPicture').value = compressedDataUrl;
-      
+
           const sizeKB = Math.round(compressedDataUrl.length / 1024);
           showAlert(`Image compressed to ${sizeKB}KB and ready to upload`, 'success');
         };
@@ -1395,32 +1411,32 @@
       };
       reader.readAsDataURL(file);
     }
-    
+
     function saveEvent(e) {
       e.preventDefault();
-  
+
       if (!window.canEditEvents && !isOwner) {
         showAlert('Only owner can save events', 'error');
         return;
       }
-  
+
       const eventId = document.getElementById('eventId').value;
       const event = allEvents.find(ev => ev.id == eventId);
-  
+
       if (!event) {
         showAlert('Event not found', 'error');
         return;
       }
-      
+
       console.log('Events saveEvent:', { eventId, event });
-  
+
       const saveBtn = e.target.querySelector('button[type="submit"]');
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-  
+
       const pictureValue = document.getElementById('eventPicture').value.trim();
       console.log('Picture value:', pictureValue);
-  
+
       // Check if it's a data URL (uploaded file) or regular URL
       if (pictureValue.startsWith('data:image')) {
         // Upload to Drive first
@@ -1429,7 +1445,7 @@
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           console.log('Using google.script.run for image upload');
           google.script.run
-            .withSuccessHandler(function(uploadResult) {
+            .withSuccessHandler(function (uploadResult) {
               console.log('Image upload success:', uploadResult);
               if (uploadResult.success) {
                 // Now update event with Drive URL
@@ -1440,7 +1456,7 @@
                 saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
               }
             })
-            .withFailureHandler(function(error) {
+            .withFailureHandler(function (error) {
               console.error('Image upload error:', error);
               showAlert('Image upload error: ' + error, 'error');
               saveBtn.disabled = false;
@@ -1475,77 +1491,77 @@
       }
     }
 
-function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
-  // Use the stored event object to preserve all fields
-  const originalEvent = window.currentEditingEvent || event;
-  
-  console.log('updateEventWithData:', { eventId, originalEvent, pictureUrl });
-  
-  const eventData = {
-    eventName: originalEvent.eventName,
-    events: document.getElementById('eventEvents').value,
-    date: originalEvent.date,
-    time: originalEvent.time,
-    location: originalEvent.location,
-    mapUrl: document.getElementById('eventMapUrl').value,
-    description: document.getElementById('eventDescription').value,
-    attendeeList: document.getElementById('eventAttendeeList').value,
-    mapUrl: document.getElementById('eventMapUrl').value,
-    pictureUrl: pictureUrl
-  };
-  
-  console.log('Sending eventData:', eventData);
-  
-  if (typeof google !== 'undefined' && google.script && google.script.run) {
-    console.log('Using google.script.run for updateEvent');
-    google.script.run
-      .withSuccessHandler(function(result) {
-        console.log('updateEvent success:', result);
-        if (result.success) {
-          showAlert(result.message, 'success');
-          closeModal();
-          loadEvents();
-        } else {
-          showAlert(result.message, 'error');
-        }
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-      })
-      .withFailureHandler(function(error) {
-        console.error('updateEvent error:', error);
-        showAlert('Error: ' + error, 'error');
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-      })
-      .updateEvent(eventId, eventData);
-    return;
-  }
+    function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
+      // Use the stored event object to preserve all fields
+      const originalEvent = window.currentEditingEvent || event;
 
-  // Fallback: POST updateEvent with userEmail for sheet-admin authorization
-  console.log('Using postToScript for updateEvent');
-  const idToken = localStorage.getItem('googleToken') || '';
-  const userEmail = localStorage.getItem('userEmail') || '';
-  postToScript({ action: 'updateEvent', eventId: eventId, eventData: eventData, id_token: idToken, userEmail: userEmail })
-    .then(result => {
-      console.log('postToScript result:', result);
-      if (result.success) {
-        showAlert(result.message || 'Saved', 'success');
-        closeModal();
-        loadEvents();
-      } else {
-        showAlert(result.message || result.error || 'Update failed', 'error');
+      console.log('updateEventWithData:', { eventId, originalEvent, pictureUrl });
+
+      const eventData = {
+        eventName: originalEvent.eventName,
+        events: document.getElementById('eventEvents').value,
+        date: originalEvent.date,
+        time: originalEvent.time,
+        location: originalEvent.location,
+        mapUrl: document.getElementById('eventMapUrl').value,
+        description: document.getElementById('eventDescription').value,
+        attendeeList: document.getElementById('eventAttendeeList').value,
+        mapUrl: document.getElementById('eventMapUrl').value,
+        pictureUrl: pictureUrl
+      };
+
+      console.log('Sending eventData:', eventData);
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        console.log('Using google.script.run for updateEvent');
+        google.script.run
+          .withSuccessHandler(function (result) {
+            console.log('updateEvent success:', result);
+            if (result.success) {
+              showAlert(result.message, 'success');
+              closeModal();
+              loadEvents();
+            } else {
+              showAlert(result.message, 'error');
+            }
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+          })
+          .withFailureHandler(function (error) {
+            console.error('updateEvent error:', error);
+            showAlert('Error: ' + error, 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+          })
+          .updateEvent(eventId, eventData);
+        return;
       }
-    })
-    .catch(err => {
-      console.error('postToScript error:', err);
-      showAlert('Error: ' + err, 'error');
-    })
-    .finally(() => {
-      saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-    });
-}
-    
+
+      // Fallback: POST updateEvent with userEmail for sheet-admin authorization
+      console.log('Using postToScript for updateEvent');
+      const idToken = localStorage.getItem('googleToken') || '';
+      const userEmail = localStorage.getItem('userEmail') || '';
+      postToScript({ action: 'updateEvent', eventId: eventId, eventData: eventData, id_token: idToken, userEmail: userEmail })
+        .then(result => {
+          console.log('postToScript result:', result);
+          if (result.success) {
+            showAlert(result.message || 'Saved', 'success');
+            closeModal();
+            loadEvents();
+          } else {
+            showAlert(result.message || result.error || 'Update failed', 'error');
+          }
+        })
+        .catch(err => {
+          console.error('postToScript error:', err);
+          showAlert('Error: ' + err, 'error');
+        })
+        .finally(() => {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        });
+    }
+
     function closeModal() {
       document.getElementById('editModal').style.display = 'none';
       document.getElementById('editForm').reset();
@@ -1561,12 +1577,12 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
 
       // Reset form
       document.getElementById('addEventForm').reset();
-      
+
       // Set today's date as default
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0];
       document.getElementById('newEventDate').value = dateStr;
-      
+
       // Open modal
       document.getElementById('addEventModal').style.display = 'block';
     }
@@ -1627,7 +1643,7 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
       // Save to backend
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(function(result) {
+          .withSuccessHandler(function (result) {
             console.log('Add event success:', result);
             if (result.success) {
               showAlert('Event added successfully!', 'success');
@@ -1639,7 +1655,7 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
               saveBtn.innerHTML = '<i class="fas fa-plus"></i> Add Event';
             }
           })
-          .withFailureHandler(function(error) {
+          .withFailureHandler(function (error) {
             console.error('Add event error:', error);
             showAlert('Error: ' + error, 'error');
             saveBtn.disabled = false;
@@ -1649,12 +1665,12 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
       } else {
         // Use REST API
         const idToken = localStorage.getItem('googleToken') || '';
-        postToScript({ 
-          action: 'addNewEvent', 
-          eventId: newEventId, 
-          eventData: newEvent, 
-          id_token: idToken, 
-          userEmail: userEmail 
+        postToScript({
+          action: 'addNewEvent',
+          eventId: newEventId,
+          eventData: newEvent,
+          id_token: idToken,
+          userEmail: userEmail
         })
           .then(result => {
             console.log('Add event result:', result);
@@ -1676,47 +1692,47 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
           });
       }
     }
-    
+
     function formatDate(dateStr) {
       if (!dateStr) return '';
       try {
         const parts = dateStr.split('-');
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return `${parts[2]} - ${months[parseInt(parts[1]) - 1]} - ${parts[0]}`;
-        } catch (e) {
+      } catch (e) {
         return dateStr;
-        }
+      }
     }
 
     // ==================== EVENT HANDLERS ====================
     function handleEventsSuccess(events) {
       log('Events loaded successfully', { count: events.length });
-      
+
       allEvents = events || [];
       showLoading(false);
       updateMonthDisplay();
       document.getElementById('eventsGrid').style.display = 'grid';
     }
-    
+
     function handleEventsError(error) {
       log('Error loading events', error);
-      
+
       showLoading(false);
       showError(`Failed to load events: ${error.message || error}`);
-      
+
       // Try demo data as fallback
       log('Loading demo data as fallback');
       allEvents = getDemoEvents();
       updateMonthDisplay();
       document.getElementById('eventsGrid').style.display = 'grid';
     }
-    
+
     // ==================== DEMO DATA ====================
     function getDemoEvents() {
       const today = new Date();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
-      
+
       return [
         {
           id: 'demo1',
@@ -1744,12 +1760,12 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
         }
       ];
     }
-    
+
     // ==================== UI FUNCTIONS ====================
     function showLoading(show) {
       document.getElementById('loadingSection').style.display = show ? 'block' : 'none';
     }
-    
+
     function showError(message) {
       const errorSection = document.getElementById('errorSection');
       errorSection.innerHTML = `
@@ -1763,10 +1779,10 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
       `;
       errorSection.style.display = 'block';
     }
-    
+
     function hideError() {
       document.getElementById('errorSection').style.display = 'none';
-    } 
+    }
 
 
     function showAlert(message, type) {
@@ -1774,11 +1790,11 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
       alertBox.className = `alert alert-${type}`;
       alertBox.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
       alertBox.style.display = 'block';
-  
+
       setTimeout(() => {
         alertBox.style.display = 'none';
       }, 5000);
-  
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1786,15 +1802,15 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
     function goToCalendar() {
       window.location.href = '/calendar.html';
     }
-    
+
     function goToAdmin() {
       window.location.href = '/admin.html';
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const editModal = document.getElementById('editModal');
       const addEventModal = document.getElementById('addEventModal');
-      
+
       if (event.target === editModal) {
         closeModal();
       }
@@ -1803,7 +1819,7 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
       }
     }
 
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
       displayEvents(currentMonthEvents);
     });
 
@@ -1830,4 +1846,5 @@ function updateEventWithData(eventId, event, pictureUrl, saveBtn) {
     }
   </script>
 </body>
+
 </html>
