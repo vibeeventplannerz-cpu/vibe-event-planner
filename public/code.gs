@@ -1495,6 +1495,15 @@ function doPost(e) {
         Logger.log('✅ addEvent authorized - calling addEvent with eventData: ' + JSON.stringify(eventData));
         return jsonResponse(addEvent(eventData));
 
+      case 'addNewEvent':
+        Logger.log('addNewEvent action: checking authentication...');
+        if (!userEmail) {
+          Logger.log('❌ addNewEvent denied - user not authenticated');
+          return jsonResponse({ success: false, error: 'Please log in to add events' });
+        }
+        Logger.log('✅ addNewEvent authorized for user: ' + userEmail + ', calling addEvent with eventData: ' + JSON.stringify(eventData));
+        return jsonResponse(addEvent(eventData));
+
       case 'updateEvent':
         Logger.log('updateEvent action: checking admin status...');
         if (!isAdminUser()) {

@@ -826,7 +826,20 @@
       <form id="addEventForm" onsubmit="saveNewEvent(event)">
         <div class="form-group">
           <label for="newEventName"><i class="fas fa-heading"></i> Event Name *</label>
-          <input type="text" id="newEventName" required placeholder="e.g., Birthday Party, Team Meeting">
+          <input type="text" id="newEventName" list="eventNameSuggestions1" required placeholder="e.g., Birthday Party, Team Meeting">
+          <datalist id="eventNameSuggestions1">
+            <option value="Birthday">
+            <option value="DJ">
+            <option value="Wedding">
+            <option value="Reception">
+            <option value="Puberty Function">
+            <option value="Surprice Event">
+            <option value="Conference Event">
+            <option value="Shop Event">
+            <option value="Festival Celebration">
+            <option value="Product Launch">
+            <option value="Charity Event">
+          </datalist>
         </div>
 
         <div class="form-group">
